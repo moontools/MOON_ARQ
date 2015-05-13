@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<!--
+    Formulário de Lista Mestra
+-->
+<html lang="pt-br" ng-app="listaMestra">
+    <head>
+        <title>Lista Mestra</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <!-- Arquivos de Stilos -->
+        <link rel="stylesheet" media="screen" href="../css/bootstrap.css" />
+        <link rel="stylesheet" media="screen" href="../lib/angular-toggle-switch.css"/>
+        <link rel="stylesheet" media="screen" href="../css/styles.css"/> 
+        
+            
+        <!-- Arquivos JS   -->
+        <script src="https://apis.google.com/js/client.js?onload=handleClientLoad" type="text/javascript"></script>
+        <script src="../lib/angularjs/angular.min.js" type="text/javascript"></script>
+        <script src="../bower_components/angular-bootstrap/ui-bootstrap-tpls.js" type="text/javascript"></script>
+        <script src="../lib/angular-toggle-switch.min.js" type="text/javascript"></script>
+        
+                <!-- Modal Services -->
+        <link rel='stylesheet' media="screen" href="../bower_components/angular-dialog-service/dist/dialogs.min.css"/>
+        <script src="//code.angularjs.org/1.3.0/angular-sanitize.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/bower-angular-translate/2.0.1/angular-translate.min.js"></script>
+        <script src="../bower_components/angular-dialog-service/dist/dialogs-default-translations.min.js" type="text/javascript"></script>
+        <script src="../bower_components/angular-dialog-service/dist/dialogs.min.js" type="text/javascript"></script>
+        
+        <script src="../js/app.js" type="text/javascript"></script>
+        <script src="../js/controllers.js" type="text/javascript"></script>
+        <script src="../js/services.js" type="text/javascript"></script>
+        
+        
+
+        
+        
+
+    </head>
+  
+
+    <body ng-controller="formListaMestra">
+        <div id="loading-div-background" ng-show="spinerloading">
+            <div id="loading-div" class="ui-corner-all" >
+                    <img src="../css/images/loading.gif" alt="Loading.."/>
+                    <h2 id="mensageLoading">{{messageLoading}}</h2>
+            </div> 
+        </div>
+                        
+        <div class="container" ng-hide="spinerloading">
+            <!-- Cabeçalho do formulário -->
+            <div class="jumbotron">
+                <h2>Lista Mestra</h2>
+                <!-- Descrição do Formulário -->
+                <small>Formulário para inserção de documentos da Lista Mestra!</small>
+            </div>
+            
+            <!-- Inicio Inputs -->
+            <form name="formListaMestra" novalidate ng-submit="salvar()" >
+
+                    <!-- Email -->
+                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.usuario.$invalid}">      
+                        <label class="control-label">Usuário </label>
+                        <small class="help-block" ng-show="formListaMestra.usuario.$invalid">Usuário Inválido</small>
+                        <input type="email"
+                               name="usuario"
+                               class="form-control" 
+                               ng-model="registro.usuario" 
+                               required
+                               ng-disabled="true"
+                               ng-pattern="/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/">
+                    </div> 
+                    <!-- Fim e-mail -->
+
+                    <!-- Código documento -->
+                    <div class="form-group">      
+                        <label class="control-label">Código documento </label>
+                        <small class="help-block"></small>
+                        <input type="text"
+                               name="codigoDocumento"
+                               class="form-control" 
+                               ng-model="registro.codigoDocumento"
+                               ng-disabled="true">
+                    </div> 
+                    <!-- Fim código documento -->
+
+                    <!-- Cliente -->
+                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.cliente.$invalid && !formListaMestra.cliente.$pristine}">      
+                        <label class="control-label">Cliente </label>
+                        <small class="help-block" ng-show="formListaMestra.cliente.$invalid && !formListaMestra.cliente.$pristine">Selecione um cliente</small>
+                        <select ng-options="cliente[0] as cliente[0] for cliente in params.cliente"
+                                name="cliente"
+                                class="form-control" 
+                                ng-model="registro.cliente" 
+                                required>
+                            <option></option>
+                        </select>
+                    </div> 
+                    <!-- Fim Cliente -->
+
+                    <!-- Empreendimento -->
+                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.empreendimento.$invalid && !formListaMestra.empreendimento.$pristine}">      
+                        <label class=" control-label">Empreendimento </label>
+                        <small class="help-block" ng-show="formListaMestra.empreendimento.$invalid && !formListaMestra.empreendimento.$pristine">Selecione um empreendimento</small>
+                        <select name="empreendimento"
+                                ng-options="empreendimento.empreendimento as empreendimento.empreendimento for empreendimento in params.empreendimento"
+                                class="form-control" 
+                                ng-model="registro.empreendimento" 
+                                required>
+                            <option></option>
+                        </select>
+                    </div> 
+                    <!-- Fim Empreendimento -->
+
+                    <!-- Projeto -->
+                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.projeto.$invalid && !formListaMestra.projeto.$pristine}">      
+                        <label class=" control-label">Projeto </label>
+                        <small class="help-block" ng-show="formListaMestra.projeto.$invalid && !formListaMestra.projeto.$pristine">Selecione um projeto</small>
+                        <select name="projeto"
+                                ng-options="projeto[0] as projeto[0] for projeto in params.projeto"
+                                class="form-control" 
+                                ng-model="registro.projeto" 
+                                required>
+                            <option></option>
+                        </select>
+                    </div> 
+                    <!-- Fim Projeto -->
+
+                    <!-- Complemento -->
+                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.complemento.$invalid && !formListaMestra.complemento.$pristine}">      
+                        <label class="control-label">Complemento </label>
+                        <small class="help-block" ng-show="formListaMestra.complemento.$invalid && !formListaMestra.complemento.$pristine">Selecione um complemento</small>
+                        <select name="complemento"
+                                ng-options="complemento[0] as complemento[0] for complemento in params.complemento"
+                                class="form-control" 
+                                ng-model="registro.complemento" 
+                                required>
+                            <option></option>
+                        </select>
+                    </div> 
+                    <!-- Fim Complemento -->
+
+                    <!-- Responsável Técnico -->
+                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.responsavelTecnico.$invalid && !formListaMestra.responsavelTecnico.$pristine}">   
+                        <label class="control-label">Responsável Técnico </label>
+                        <small class="help-block" ng-show="formListaMestra.responsavelTecnico.$invalid && !formListaMestra.responsavelTecnico.$pristine">Selecione o responsável tecnico</small>
+                        <select name="responsavelTecnico"
+                                ng-options="responsavelTecnico[0] as responsavelTecnico[0] for responsavelTecnico in params.responsavelTecnico"
+                                class="form-control" 
+                                ng-model="registro.responsavelTecnico" 
+                                required>
+                            <option></option>
+                        </select>
+                    </div> 
+                    <!-- Fim Responsável Ténico -->
+
+                    <!-- Arquivo Editavel -->
+                    <div class="form-group">      
+                        <label class=" control-label">Arquivo Editável </label>
+                        <small></small>
+                        <input type="file"
+                               name="arquivoEditavel"
+                               class="form-control" 
+                               fileread="registro.arquivoEditavel"
+                               ng-model="registro.arquivoEditavel"/>
+                        </div>
+                    <!-- Fim Arquivo Editavel -->
+                    
+                    <!-- Arquivo Impressão -->
+                    <div class="form-group">      
+                        <label class="control-label">Arquivo Impressão </label>
+                        <small></small>
+                        <input type="file"
+                               class="form-control" 
+                               fileread="registro.arquivoImpressao"
+                               ng-model="registro.arquivoImpressao"
+                               ng-required="registro.arquivoEditavel"/>
+                    </div>
+                    <!-- Fim Arquivo Impressão -->
+
+                    <!-- Arquivo PDF -->
+                    <div class="form-group">      
+                        <label class=" control-label">Arquivo PDF </label>
+                        <small>{{registro.arquivoEditavel.name}}</small>
+                        <input type="file"
+                               class="form-control"
+                               fileread="registro.arquivoPdf"
+                               ng-model="registro.arquivoPdf"
+                               ng-required="registro.arquivoEditavel"/>
+                            
+                    </div>
+                    <!-- Fim Arquivo PDF -->
+
+                    <!-- Descrição Arquivo -->
+                    <div class="form-group">      
+                        <label class="control-label">Descrição Arquivo </label>
+                        <small></small>
+                        <input type="text" 
+                               placeholder="Insira a descrição o arquivo"
+                               class="form-control" 
+                               ng-model="registro.descricaoArquivo"
+                               required>
+                    </div> 
+                    <!-- Fim Descrição Arquivo -->
+
+                    <!-- Número Grupo Prancha -->
+                    <div class="form-group">      
+                        <label class="control-label">Nº grupo prancha </label>
+                        <small></small>
+                        <input type="text"
+                               placeholder="Insira o número do grupo de pranchas"
+                               class="form-control" 
+                               ng-model="registro.nGrupoPranchas"
+                               required>
+                    </div> 
+                    <!-- Fim Número Grupo PranchaS -->
+
+                    <!-- Número Prancha -->
+                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.numeroPrancha.$invalid && !formListaMestra.numeroPrancha.$pristine}"> 
+                        <label class=" control-label">Número Prancha </label>
+                        <small class="help-block" ng-show="formListaMestra.numeroPrancha.$invalid && !formListaMestra.numeroPrancha.$pristine">Informe somente números</small>
+                        <input type="number"
+                               name="numeroPrancha"
+                               placeholder="Insira o número da prancha"
+                               class="form-control" 
+                               ng-model="registro.numeroPrancha"
+                               required>
+                    </div> 
+                    <!-- Fim Número Prancha -->
+
+                    <!-- Radio Servidor Terra -->
+                    <div class="form-group">
+                        <label class=" control-label">Servidor Terra</label>
+                        <small class="help-block">Indique se o arquivo esta no servidor terra</small>
+                        <div class="btn-group-sm">
+                            <toggle-switch
+                                model="registro.servidorTerra"
+                                class="switch-success"
+                                on-label="Sim"
+                                off-label="Não">
+                            </toggle-switch>
+                        </div>
+                    </div>
+                    <!-- Fim Radio Servidor Terra -->
+                    
+                    <!-- Pasta Física Terra -->
+                    <div class="form-group">
+                        <label class="control-label">Pasta Física Terra</label>
+                        <small class="help-block">Indique se o arquivo esta na pasta física do Terra</small>
+                        <small></small>
+                        <div class="btn-group-sm">
+                            <toggle-switch
+                                model="registro.pastaFisicaTerra"
+                                class="switch-success"
+                                on-label="Sim"
+                                off-label="Não">
+                            </toggle-switch>
+                        </div>
+                    </div>
+                    <!-- Fim Pasta Física Terra -->
+
+                    <!-- Pasta Física Cliente -->
+                    <div class="form-group">
+                        <label class="control-label">Pasta Física Cliente</label>
+                        <small class="help-block">Indique se o arquivo esta na pasta física do cliente</small>
+                            <div class="btn-group-sm">
+                                <toggle-switch
+                                    model="registro.pastaFisicaCliente"
+                                    class="switch-success"
+                                    on-label="Sim"
+                                    off-label="Não">
+                                </toggle-switch>
+                            </div>
+                    </div>
+                    <!-- Fim Pasta Física Cliente -->
+
+                    <!-- Observações -->
+                    <div class="form-group">      
+                        <label class="control-label">Observações</label>
+                            <textarea class="form-control" 
+                                   ng-model="registro.observacoes"
+                                   required>
+                            </textarea>
+                            
+                    </div> 
+                    <!-- Fim Observações  -->
+
+                    <!-- Notificar Cliente -->
+                    <div class="form-group">
+                        <label class="control-label">Notificar Cliente</label>
+                        <small class="help-block">Indique se você quer notificar o cliente sobre este documento</small>
+                        <div class="btn-group-sm">
+                            <toggle-switch
+                                model="registro.notificarCliente"
+                                class="switch-success"
+                                on-label="Sim"
+                                off-label="Não">
+                            </toggle-switch>
+                        </div>
+                    </div>
+                    <!-- Fim Notificar Cliente -->
+                    <!-- Botão Salvar -->
+                    <div class="form-group">
+                        <label class="control-label"></label>
+                            <button type="submit" class="btn btn-primary" ng-disabled="formListaMestra.$invalid" >
+                                Salvar
+                            </button>
+                    </div>
+                    <!-- Fim NBotão Salvar -->
+                    
+            </form>
+            <!-- Fim Formulário -->
+
+            <!-- Rodapé -->
+            <footer class="footer">
+                <p>Moon Tools Sistemas e Tecnologia</p>
+            </footer>
+        </div>
+    </body>    
+</html>

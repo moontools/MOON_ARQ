@@ -1,0 +1,26 @@
+{
+  "name": "Y",
+  "version": "0.0.1",
+  "description": "Formulário Lista Mestra",
+  "main": "js/app.js",
+  "keywords": [
+    "lista",
+    "mestra"
+  ],
+  "authors": [
+    "Deividi Anderson Scalavara | deividi@moontools.com.br"
+  ],
+  "license": "MIT",
+  "homepage": "http://localhost:8080/ListaMestra/public_html/",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-dialog-service": "~5.2.6",
+    "angular-bootstrap": "~0.13.0"
+  }
+}
