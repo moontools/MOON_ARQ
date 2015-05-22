@@ -35,19 +35,19 @@
 	top: 0px;
 }*/
 
-.spinner {
+/*.spinner {
 	position: absolute;
 	right: 38px;
-	top: 8px;
+	top: 32px;
 	width: 18px;
 	height: 18px;
 	background: url(https://googledrive.com/host/0B7C12ldJ-VYWLUw3Unl4d1NPcUk/loading.gif) center center no-repeat;
 	background-size: contain;
 	z-index: 2;
-	display: none;
-}
+	display: block;
+}*/
 
-input:required, textarea:required, select:required {
+input:required, textarea:required{
     background: #fff url(https://googledrive.com/host/0B7C12ldJ-VYWLUw3Unl4d1NPcUk/red_asterisk.png) no-repeat center right 8px;
 }
 
@@ -68,12 +68,21 @@ select:required:valid {
     border-color: #28921f;
 }
 
-
 .invalido {
     background: #fff url(https://googledrive.com/host/0B7C12ldJ-VYWLUw3Unl4d1NPcUk/error.png) no-repeat center right 22px;
     background-size: 15px;
     box-shadow: 0 0 5px #5cd053;
     border-color: #28921f;
+}
+
+input.spinner{
+    background: #fff url(https://googledrive.com/host/0B7C12ldJ-VYWLUw3Unl4d1NPcUk/loading.gif) no-repeat center right 8px !important;
+    background-size: 20px !important;  
+}
+
+select.spinner{
+   background: #fff url(https://googledrive.com/host/0B7C12ldJ-VYWLUw3Unl4d1NPcUk/loading.gif) no-repeat center right 22px !important;
+   background-size: 20px !important;
 }
 
 .error{
@@ -190,4 +199,32 @@ input{
   color: #2c3e50;
   border-top: 1px solid #808080;
   border-bottom: 1px solid #808080;
+}
+
+/*.animation {
+    opacity: 1;
+}
+
+.animation.ng-hide {
+    opacity: 0;
+}*/
+
+.animated { 
+    -webkit-animation-duration: 2s; 
+    animation-duration: 2s; 
+    -webkit-animation-fill-mode: both; 
+    animation-fill-mode: both; e; 
+} 
+
+@-webkit-keyframes fadeIn { 
+    0% {opacity: 0;} 
+    100% {opacity: 1;} 
+} 
+@keyframes fadeIn { 
+    0% {opacity: 0;} 
+    100% {opacity: 1;} 
+} 
+.fadeIn { 
+    -webkit-animation-name: fadeIn; 
+    animation-name: fadeIn; 
 }

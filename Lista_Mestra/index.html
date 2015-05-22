@@ -8,29 +8,42 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         
-        <!-- Arquivos de Stilos -->
-        <link rel="stylesheet" media="screen" href="css/bootstrap.css" />
-        <link rel="stylesheet" media="screen" href="lib/angular-toggle-switch.css"/>
-        <link rel="stylesheet" media="screen" href="css/styles.css"/> 
-        
-        <!-- Arquivos JS   -->
+        <!--Google Drive API-->  
         <script src="https://apis.google.com/js/client.js?onload=handleClientLoad" type="text/javascript"></script>
-        <script src="lib/angularjs/angular.min.js" type="text/javascript"></script>
-        <script src="lib/ui-bootstrap-tpls.js" type="text/javascript"></script>
-        <script src="lib/ui-bootstrap-tpls.min.js" type="text/javascript"></script>
+        
+        <!--Angular JS-->
+        <script src="../bower_components/angular/angular.min.js" type="text/javascript"></script>
+       
+         <!--Bootstrap--> 
+        <!--<link rel="stylesheet" media="screen" href="css/bootstrap.css" />-->
+        <link href="../bower_components/bootstrap/dist/css/bootstrap.css"  rel="stylesheet" media="screen"/>
+        
+        <!--JS Ui Boostrat-->
+        <script src="../bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js" type="text/javascript"></script> 
+        
+         <!--Angular Toggle--> 
+        <link rel="stylesheet" media="screen" href="lib/angular-toggle-switch.css"/>
         <script src="lib/angular-toggle-switch.min.js" type="text/javascript"></script>
+                        
+         <!--Modal Services--> 
+        <link   href="../bower_components/angular-dialog-service/dist/dialogs.min.css" rel='stylesheet' media="screen"/>
+        <script src="../bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+        <script src="../bower_components/angular-translate/angular-translate.min.js "></script>
+        <script src="../bower_components/angular-dialog-service/dist/dialogs-default-translations.min.js" type="text/javascript"></script>
+        <script src="../bower_components/angular-dialog-service/example/js/dialogs.min.js" type="text/javascript"></script>
         
-                <!-- Modal Services -->
-        <link rel='stylesheet' media="screen" href="lib/dialogs.min.css"/>
-        <script src="//code.angularjs.org/1.3.0/angular-sanitize.min.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/bower-angular-translate/2.0.1/angular-translate.min.js"></script>
-        <script src="lib/dialogs-default-translations.min.js" type="text/javascript"></script>
-        <script src="lib/dialogs.min.js" type="text/javascript"></script>
-        
+        <!--JS da aplicação-->
         <script src="js/app.js" type="text/javascript"></script>
         <script src="js/controllers.js" type="text/javascript"></script>
         <script src="js/services.js" type="text/javascript"></script>
+        
+        <!--Libs Moontools-->
+        <script src="js/mtlGdrive.js" type="text/javascript"></script>
+        <script src="js/mtlGoogleSheet.js" type="text/javascript"></script>
+        <script src="js/mtlUtil.js" type="text/javascript"></script>
 
+        <!--Estilos próprios--> 
+        <link rel="stylesheet" media="screen" href="css/styles.css"/> 
     </head>
   
 
@@ -74,47 +87,101 @@
                         <input type="text"
                                name="codigoDocumento"
                                class="form-control" 
-                               ng-model="registro.codigoDocumento"
+                               ng-model="registro.codigo"
                                ng-disabled="true">
                     </div> 
                     <!-- Fim código documento -->
-
+                    
+                    <!-- Revisão documento -->
+                    <div class="form-group">      
+                        <label class="control-label">Revisão documento </label>
+                        <small class="help-block"></small>
+                        <input type="text"
+                               name="revisao"
+                               class="form-control" 
+                               ng-model="registro.revisao"
+                               ng-disabled="true">
+                    </div> 
+                    <!-- Fim código documento -->
+                    
+                    <!-- Data documento -->
+                    <div class="form-group">      
+                        <label class="control-label">Data documento </label>
+                        <small class="help-block"></small>
+                        <p class="input-group">
+                            <input type="text" 
+                                   class="form-control" 
+                                   datepicker-popup="dd/MM/yyyy" 
+                                   ng-model="registro.dataDocumento"
+                                   show-weeks="false"
+                                   is-open="opened" 
+                                   current-text="Hoje"
+                                   clear-text="Limpar"
+                                   close-text="Fechar"
+                                   ng-required="true"
+                                   maxlength="10"
+                                   required/>
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" ng-click="openCalendar($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+                            </span>
+                        </p>
+                    </div> 
+                    <!-- Fim Data documento -->
+                    
                     <!-- Cliente -->
                     <div class="form-group" ng-class="{ 'has-error' : formListaMestra.cliente.$invalid && !formListaMestra.cliente.$pristine}">      
                         <label class="control-label">Cliente </label>
                         <small class="help-block" ng-show="formListaMestra.cliente.$invalid && !formListaMestra.cliente.$pristine">Selecione um cliente</small>
                         <select ng-options="cliente[0] as cliente[0] for cliente in params.cliente"
                                 name="cliente"
-                                class="form-control" 
+                                class="form-control"
+                                ng-class="{'spinner' : !params.cliente}"
                                 ng-model="registro.cliente" 
                                 required>
                             <option></option>
                         </select>
                     </div> 
                     <!-- Fim Cliente -->
-
+                          
                     <!-- Empreendimento -->
                     <div class="form-group" ng-class="{ 'has-error' : formListaMestra.empreendimento.$invalid && !formListaMestra.empreendimento.$pristine}">      
                         <label class=" control-label">Empreendimento </label>
                         <small class="help-block" ng-show="formListaMestra.empreendimento.$invalid && !formListaMestra.empreendimento.$pristine">Selecione um empreendimento</small>
                         <select name="empreendimento"
                                 ng-options="empreendimento.empreendimento as empreendimento.empreendimento for empreendimento in params.empreendimento"
-                                class="form-control" 
-                                ng-model="registro.empreendimento" 
+                                class="form-control"
+                                ng-class="{'spinner' : !params.empreendimento || (formListaMestra.empreendimento.$valid && !formListaMestra.empreendimento.$pristine && !params.bloco)}"
+                                ng-model="registro.empreendimento"
+                                ng-change="showBlocos()"
                                 required>
                             <option></option>
                         </select>
                     </div> 
                     <!-- Fim Empreendimento -->
-
+                                        
+                    <!--Bloco-->
+                    <div class="form-group animated" ng-class="{'fadeIn' : params.bloco}" ng-show="params.bloco">
+                        <label class="control-label">Blocos</label>
+                        <div class="checkbox" ng-if="params.bloco !== '%loading%'" >
+                            <label ng-repeat="bloco in params.bloco" style="padding-right: 20px">
+                                <input type="checkbox" ng-model="registro.blocos[bloco[0]]"/>
+                                {{bloco[0]}}
+                            </label>
+                        </div>
+                        <small></small>
+                    </div>
+                    <!--FIM Bloco-->
+                    
                     <!-- Projeto -->
                     <div class="form-group" ng-class="{ 'has-error' : formListaMestra.projeto.$invalid && !formListaMestra.projeto.$pristine}">      
                         <label class=" control-label">Projeto </label>
                         <small class="help-block" ng-show="formListaMestra.projeto.$invalid && !formListaMestra.projeto.$pristine">Selecione um projeto</small>
                         <select name="projeto"
                                 ng-options="projeto[0] as projeto[0] for projeto in params.projeto"
-                                class="form-control" 
-                                ng-model="registro.projeto" 
+                                class="form-control"
+                                ng-class="{'spinner' : !params.projeto || (formListaMestra.projeto.$valid && !formListaMestra.projeto.$pristine && !params.complemento)}"
+                                ng-model="registro.projeto"
+                                ng-change="showComplementos()"
                                 required>
                             <option></option>
                         </select>
@@ -122,26 +189,53 @@
                     <!-- Fim Projeto -->
 
                     <!-- Complemento -->
-                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.complemento.$invalid && !formListaMestra.complemento.$pristine}">      
+                    <div class="form-group animated" ng-class="{'fadeIn' : params.complemento.length > 0}" ng-show="params.complemento.length > 0" ng-class="{ 'has-error' : formListaMestra.complemento.$invalid && !formListaMestra.complemento.$pristine}">      
                         <label class="control-label">Complemento </label>
                         <small class="help-block" ng-show="formListaMestra.complemento.$invalid && !formListaMestra.complemento.$pristine">Selecione um complemento</small>
                         <select name="complemento"
-                                ng-options="complemento[0] as complemento[0] for complemento in params.complemento"
-                                class="form-control" 
+                                ng-options="complemento as complemento for complemento in params.complemento"
+                                class="form-control"
                                 ng-model="registro.complemento" 
-                                required>
+                                ng-required="params.complemento.length > 0">
                             <option></option>
                         </select>
                     </div> 
                     <!-- Fim Complemento -->
-
+                    
+                    <!-- Detalhamento -->
+                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.detalhamento.$invalid && !formListaMestra.detalhamento.$pristine}">      
+                        <label class="control-label">Detalhamento </label>
+                        <small class="help-block" ng-show="formListaMestra.detalhamento.$invalid && !formListaMestra.detalhamento.$pristine">Selecione um detalhamento</small>
+                        <select name="detalhamento"
+                                ng-options="detalhamento[0] as detalhamento[0] for detalhamento in params.detalhamento"
+                                class="form-control"
+                                ng-class="{'spinner' : !params.detalhamento}"
+                                ng-model="registro.detalhamento" 
+                                required>
+                            <option></option>
+                        </select>
+                    </div> 
+                    <!-- Fim Detalhamento -->
+                    
+                    <!--Outro Detalhamento-->
+                    <div class="form-group" ng-show="registro.detalhamento == 'OUTRO'" ng-class="{ 'has-error' : formListaMestra.outroDetalhamento.$invalid && !formListaMestra.outroDetalhamento.$pristine}">
+                        <label class="control-label">Descreva o detalhamento </label>
+                        <input type="text"
+                               name="outroDetalhamento"
+                               class="form-control" 
+                               ng-model="registro.outroDetalhamento"
+                               ng-required="registro.detalhamento == 'OUTRO'">
+                    </div>
+                    <!--FIM Outro Detalhamento-->
+                    
                     <!-- Responsável Técnico -->
                     <div class="form-group" ng-class="{ 'has-error' : formListaMestra.responsavelTecnico.$invalid && !formListaMestra.responsavelTecnico.$pristine}">   
                         <label class="control-label">Responsável Técnico </label>
                         <small class="help-block" ng-show="formListaMestra.responsavelTecnico.$invalid && !formListaMestra.responsavelTecnico.$pristine">Selecione o responsável tecnico</small>
                         <select name="responsavelTecnico"
                                 ng-options="responsavelTecnico[0] as responsavelTecnico[0] for responsavelTecnico in params.responsavelTecnico"
-                                class="form-control" 
+                                class="form-control"
+                                ng-class="{'spinner' : !params.responsavelTecnico}"
                                 ng-model="registro.responsavelTecnico" 
                                 required>
                             <option></option>
@@ -157,7 +251,8 @@
                                name="arquivoEditavel"
                                class="form-control" 
                                fileread="registro.arquivoEditavel"
-                               ng-model="registro.arquivoEditavel"/>
+                               ng-model="registro.arquivoEditavel"
+                               ng-required="registro.arquivoEditavel || registro.arquivoImpressao"/>
                         </div>
                     <!-- Fim Arquivo Editavel -->
                     
@@ -169,19 +264,19 @@
                                class="form-control" 
                                fileread="registro.arquivoImpressao"
                                ng-model="registro.arquivoImpressao"
-                               ng-required="registro.arquivoEditavel"/>
+                               ng-required="registro.arquivoEditavel || registro.arquivoImpressao"/>
                     </div>
                     <!-- Fim Arquivo Impressão -->
 
                     <!-- Arquivo PDF -->
                     <div class="form-group">      
                         <label class=" control-label">Arquivo PDF </label>
-                        <small>{{registro.arquivoEditavel.name}}</small>
+                        <small></small>
                         <input type="file"
                                class="form-control"
                                fileread="registro.arquivoPdf"
                                ng-model="registro.arquivoPdf"
-                               ng-required="registro.arquivoEditavel"/>
+                               ng-required="registro.arquivoEditavel || registro.arquivoImpressao || registro.arquivoPdf"/>
                             
                     </div>
                     <!-- Fim Arquivo PDF -->
@@ -194,6 +289,7 @@
                                placeholder="Insira a descrição o arquivo"
                                class="form-control" 
                                ng-model="registro.descricaoArquivo"
+                               capitalize
                                required>
                     </div> 
                     <!-- Fim Descrição Arquivo -->
@@ -206,7 +302,8 @@
                                placeholder="Insira o número do grupo de pranchas"
                                class="form-control" 
                                ng-model="registro.nGrupoPranchas"
-                               required>
+                               capitalize
+                               ng-required="registro.nGrupoPranchas">
                     </div> 
                     <!-- Fim Número Grupo PranchaS -->
 
@@ -219,7 +316,7 @@
                                placeholder="Insira o número da prancha"
                                class="form-control" 
                                ng-model="registro.numeroPrancha"
-                               required>
+                               ng-required="registro.nGrupoPranchas">
                     </div> 
                     <!-- Fim Número Prancha -->
 
@@ -272,11 +369,11 @@
                     <!-- Observações -->
                     <div class="form-group">      
                         <label class="control-label">Observações</label>
-                            <textarea class="form-control" 
-                                   ng-model="registro.observacoes"
-                                   required>
+                            <textarea class="form-control"
+                                      capitalize
+                                      ng-model="registro.observacoes"
+                                      ng-required="registro.observacoes">
                             </textarea>
-                            
                     </div> 
                     <!-- Fim Observações  -->
 
@@ -300,8 +397,15 @@
                             <button type="submit" class="btn btn-primary" ng-disabled="formListaMestra.$invalid" >
                                 Salvar
                             </button>
+                            <button type="button" class="btn btn-primary" ng-click="teste()" >
+                                Testar
+                            </button>
+                            <button type="button" class="btn btn-primary" ng-click="teste2()" >
+                                Testar
+                            </button>
+                        
                     </div>
-                    <!-- Fim NBotão Salvar -->
+                    <!-- Fim Botão Salvar -->
                     
             </form>
             <!-- Fim Formulário -->

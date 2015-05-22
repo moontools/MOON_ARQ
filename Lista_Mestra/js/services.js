@@ -1,274 +1,192 @@
-app.factory('mtlGdrive',function(){
+app.service('lmFiles',function(mtlGdrive,$timeout){
     
-    // Variáveis locais
-    var _clientId = '';
-    var _scopes = '';
-    var driveApi = {};
-    
-    // Seta o ID do cliente da API Google
-    driveApi.setClientId = function(clientId){
-        _clientId = clientId; 
+    var idFolderRaiz = null; // Id da pasta raiz
+    var fileData = null; // Arquivo a ser inserido
+    var titleFile = null; // Nome do arquivo
+    var folder = null; // Localização onde o arquivo deverá ser inserido
+    var processing = false; // Indica se o processo de inserção de arquivo esta em andamento
+    var status = false; // Indica o status do
+    var linkArquivo = null; // Link do arquivo após ser enviado para o drive
+    var message = ""; // Mensagem utilizada em caso de erros
+        
+    /*
+     * Varre todas as pastas e subpastas de uma pasta pai para conhecer sua estrutura
+     * Obs: Essa função trabalha de forma recursiva
+     * @param {type} Objeto para identificar cada pasta
+     * @param {type} idFolder Id folder da pasta raiz
+     * @returns {undefined}
+     */
+    var varreEstruturaDeFolder = function(parent,idFolder){
+        mtlGdrive.listChildrenInFolder(idFolder,function(result){
+            if(result.error)
+                    return error(result.error.message);
+            var children = result.items;
+            for(var i in children){
+                mtlGdrive.getInfoFile(children[i].id,function(result){
+                    if(result.error)
+                        return error(result.error.message);
+                    if(result.mimeType === 'application/vnd.google-apps.folder' && result.title == ''){
+                        var filho = {
+                            id:result.id,
+                            title:result.title,
+                            children: []
+                        };
+                        parent.children.push(filho);
+                        descobreFilhos(parent.children[parent.children.length-1],result.id);
+                    } 
+                }); 
+            }
+            
+        });  
+    }; 
+
+    /*
+     * Função de erro padrão
+     * @param {string} error Mensagem de erro a ser retornada
+     */
+    var error = function(error){
+        message = error;
+        status = false;
+        processing = false;
     };
     
-    // Seta o Scopo da API Google
-    driveApi.setScopes = function(scopes){
-        _scopes = scopes;
-    };
-   
-    /**
-    * Verifica se o usuário corrente autorizou a aplicação
-    */
-    driveApi.checkAuth = function() {
-        // Verifica se a API do Google foi carregada
-        if (typeof gapi.auth !== 'undefined') {
-            // Caso positivo verifica a autorização do usuário
-            console.log('Drive API Carregada...');
-            console.log("verificando Autenticação");
-            gapi.auth.authorize(
-               {'client_id': _clientId, 'scope': _scopes, 'immediate': true},
-               handleAuthResult);
+    /*
+     * Descobre quantos quantos filhos existem um uma pasta pai
+     * @param {type} idFolder id da pasta pai
+     * @param {type} patchFolder array com as pastas a serem encontradas
+     * @returns {undefined}
+     */
+    var descobreFilhos = function(idFolder,patchFolder){
+        if(patchFolder.length > 0){
+            mtlGdrive.getInfoFile(idFolder,function(result){
+                if(result.error)
+                    return error(result.error.message);
+                mtlGdrive.listChildrenInFolder(idFolder,function(result){
+                    if(result.error)
+                        return error(result.error.message);
+                    conhecerFilhos(idFolder,result.items,patchFolder);
+                });  
+            });
         }else{
-            // Caso negativo entra em looping aguardando o carregamento
-            handleClientLoad();
+            saveFile([idFolder]);
         }
     }; 
     
-    
-    /**
-    * Função chamada enquando a API do Google esta sendo carregada
-    */
-    handleClientLoad = function () {
-        console.log("Carregando Drive API...");
-        window.setTimeout(driveApi.checkAuth, 1);			
-    };
-    
-    
-    /**
-     * Função executada assim que é verificação de autorização do usuário é executada
+    /*
+     * Varre as pastas e arquivos filhos de uma determinada pasta pai buscando por determinadas pastas
+     * @param {type} idFolder id da pasta pai
+     * @param {type} itens filhos a serem conhecidos
+     * @param {type} patchFolder Array contendo o nome das pastas a serem localizadas
+     * @returns {undefined}
      */
-    handleAuthResult = function(authResult){
-        // Verifcica se o usuário autorizou a aplicação
-        if (authResult && !authResult.error) {
-            console.log("Autenticado com sucesso!");
+    var conhecerFilhos = function(idFolder,itens,patchFolder){
+        if(itens.length > 0){
+            mtlGdrive.getInfoFile(itens[0].id,function(result){
+                if(result.error)
+                    return error(result.error.message);
+                if(result.mimeType === 'application/vnd.google-apps.folder' && result.title === patchFolder[0]){
+                    console.log("Achei a pasta "+result.title);
+                    patchFolder.shift();
+                    descobreFilhos(result.id,patchFolder);
+                }else{
+                    console.log("Estou procurando");
+                    itens.shift();
+                    conhecerFilhos(idFolder,itens,patchFolder);
+                }
+            });
         }else{
-            // Caso negativo exibe tela de autenticação
-            gapi.auth.authorize(
-                  {'client_id': _clientId, 'scope': _scopes, 'immediate': false},
-                  handleAuthResult);
+            console.log("Terminei a procura de "+patchFolder[0]+" e não achei");
+            criarPasta(patchFolder,idFolder);
         }
     };
     
-    
-    /**
-     * Inicia o upload do arquivo
-     *
-     * @param {Object} evt Arguments from the file selector.
+    /*
+     * Cria uma pasta no Drive
+     * @param {type} patchFolder Array contendo o nome das pastas a serem criardas
+     *               Obs: O nome da pasta a ser criada no momento deve estas na primeira posição do array
+     * @param {type} idParent Id da pasta pasta pai onde será criada a nova pasta
      */
-    uploadFile = function(evt) {
-      gapi.client.load('drive', 'v2', function() {
-        var file = evt.target.files[0];
-        insertFile(file);
-      });
+    var criarPasta = function(patchFolder, idParent){
+        if(patchFolder.length > 0){
+            console.log("Vou criar a pasta "+patchFolder[0]+" na pasta cujo id é "+idParent);
+                mtlGdrive.createFolder(patchFolder[0],[idParent],function(result){
+                    if(result.error)
+                        return error(result.error.message);
+                    console.log("Criei a pasta "+patchFolder[0]+" cujo id é "+result.id);
+                    patchFolder.shift();
+                    criarPasta(patchFolder,result.id);
+            });
+        }else{
+            saveFile([idParent]);
+        }
     };
     
-    
-    /**
-     * Enviar arquivo para o Drive.
-     *
-     * @param {File} fileData Objeto arquivo.
-     * @param {Function} callback Função a ser executada ao final da requisição.
+    /*
+     * Seta o id da pasta raiz
+     * @params {string} id da pasta
      */
-    driveApi.insertFile = function(fileData, callback) {
-        console.log("Estou enviando o arquivo...");
-        const boundary = '-------314159265358979323846';
-        const delimiter = "\r\n--" + boundary + "\r\n";
-        const close_delim = "\r\n--" + boundary + "--";
-
-        var reader = new FileReader();
-        reader.readAsBinaryString(fileData);
-        reader.onload = function(e) {
-          var contentType = fileData.type || 'application/octet-stream';
-          var metadata = {
-            'title': fileData.name,
-            'mimeType': contentType
-          };
-
-          var base64Data = btoa(reader.result);
-          var multipartRequestBody =
-              delimiter +
-              'Content-Type: application/json\r\n\r\n' +
-              JSON.stringify(metadata) +
-              delimiter +
-              'Content-Type: ' + contentType + '\r\n' +
-              'Content-Transfer-Encoding: base64\r\n' +
-              '\r\n' +
-              base64Data +
-              close_delim;
-
-          var request = gapi.client.request({
-              'path': '/upload/drive/v2/files',
-              'method': 'POST',
-              'params': {'uploadType': 'multipart'},
-              'headers': {
-                'Content-Type': 'multipart/mixed; boundary="' + boundary + '"'
-              },
-              'body': multipartRequestBody});
-          if (!callback) {
-            callback = function(file) {
-              console.log(file)
-            };
-          }
-          request.execute(callback);
-        };
+    this.setFolderRaiz = function(idFolder){
+      idFolderRaiz = idFolder;  
     };
     
-    return driveApi;
+    /*
+     * Seta o arquivo a ser enviado para o Google Drive
+     * @params {file} file Arquivo no formato file
+     * @params {string} title Nome do arquivo
+     */
+    this.setFile = function(file,title){
+      fileData = file;  
+      titleFile = title;
+    };
     
+    /*
+     * Seta o caminho da pasta onde o arquivo deverá ser inserido, a partir da pasta raiz
+     * @params {string} patchFolder Obs: Casa pasta deve ser separada por /
+     */
+    this.setPatchFolder = function(patchFolder){
+      folder = patchFolder.split("/") ? patchFolder.split("/") : patchFolder;  
+    };
+    
+    /*
+     * Envia o arquivo para o Google Drive
+     * @params {array} parents Array com os ids das pastas onde o arquivo deverá ser inserido;
+     */
+    var saveFile = function(parents){
+        console.log("Vou inserir o arquivo "+fileData);
+        if(!fileData)
+            return error("Tentativa de upload de arquivo inválido.");
+        mtlGdrive.insertFile(fileData,titleFile,[parents],function(result){
+            if(result.error)
+                return error(result.error.message);
+            console.log("Inseri o arquivo");
+            linkArquivo = result.alternateLink;
+            status = true;
+            processing = false;
+        });
+    };
+    
+    /*
+     * Inicia o processo de upload do arquivo
+     * @params {callback} Função a ser executada ao final da execução do processo de upload.
+     */
+    this.uploadFile = function(callback){
+        try{
+            // Indica que o processo iniciou
+            processing = true;
+            descobreFilhos(idFolderRaiz,folder);
+            
+            // Entra em looping esperando o processo terminar
+            (checkStatus = function(){
+                $timeout(function(){
+                    if(!processing){
+                        callback(status,linkArquivo,message);
+                    }else{
+                        checkStatus(); 
+                    }
+                },1000);
+            })();
+        }catch(e){
+           callback(status,null,e.message); 
+        }
+    };
 });
-
-app.factory('googleSheet',function($http){
-    
-    // Variáveris Globais
-    var _urlBaseApi = 'https://script.google.com/a/macros/moontools.com.br/s/AKfycbxstp_IrA2oAvOL1EltTm_ocpLW1p5_RcOPQrmKk54/dev',
-        _urlApi = '',
-        _spreadSheetId = '',
-        _sheetName ='';
-    var googleSheet = {};
-    
-    /**
-     * Seta o Id da planilha a ser manipulada pela API
-     * @param {type} spreadSheetId Id da planilha do Google
-     */
-    googleSheet.setSpreadSheetId = function(spreadSheetId){
-        _spreadSheetId = spreadSheetId;
-        googleSheet.configParamsDefaults();
-    };
-    
-    
-    /**
-     * Seta o nome da página a ser manipulada pela API
-     * @param {type} sheetName Nome página
-     */
-    googleSheet.setSheetName = function(sheetName){
-        _sheetName = sheetName;
-        googleSheet.configParamsDefaults();
-    };
-    
-    /**
-     * Configura o url com algums parâmetros defaul
-     */
-    googleSheet.configParamsDefaults = function(){
-        _urlApi = _urlBaseApi+"?callback=JSON_CALLBACK&spreadSheetId="+_spreadSheetId+"&sheetName="+_sheetName;
-        console.log(_urlApi)
-    };
-    
-    /**
-     * Insere um novo registro na planilha
-     * @param {object} record Objeto com os dados a serem inseridos
-     * @param {function} callback Função a ser executada ao fim da requisição
-     */
-    googleSheet.insertRecord = function(record, callback){
-        var params = {
-            metodo:"insertRecord", 
-            dados:record};
-        googleSheet.request(params,callback);   
-    };
-    
-    /**
-     * Remove um registro da planilha
-     * @param {string} type Tipo de busca a ser feita para encontrar o registro
-     *                 EX: "linha","Código" ou pelo Cabelçaho de preferência
-     * @param {type} value Valor a ser procurado
-     * @param {type} callback Função a ser executada ao fim da requisição 
-     */
-    googleSheet.removeRecord = function(type,value,callback){
-        var params = {
-            metodo:"removeRecord", 
-            type:type,
-            value:value};
-        googleSheet.request(params,callback);   
-    };
-    
-    /**
-     * Atualiza um registro da planilha
-     * @param {object} record Dados a serem atualizados
-     * @param {string} type Tipo de busca a ser feita para encontrar o registro
-     *                 EX: "linha","Código" ou pelo Cabelçaho de preferência
-     * @param {type} value Valor a ser procurado
-     * @param {type} callback Função a ser executada ao fim da requisição
-     */
-    googleSheet.updateRecord = function(record, type, value, callback){
-       var params = {
-           metodo:"updateRecord",
-           dados:record,
-           type:type,
-           value:value};
-       googleSheet.request(params,callback); 
-    };
-    
-    
-    /**
-     * Retorna um registro da planilha
-     * @param {string} type Tipo de busca a ser feita para encontrar o registro
-     *                 EX: "linha","Código" ou pelo Cabelçaho de preferência
-     * @param {type} value Valor a ser procurado
-     * @param {type} callback Função a ser executada ao fim da requisição
-     */
-    googleSheet.getRecord = function(type, value, callback){
-       var params = {
-           metodo:"getRecord",
-           type:type,
-           value:value};
-       googleSheet.request(params,callback);
-    };
-    
-    /**
-     * Retorna um registro da planilha
-     * @param {string} returnType Tipo do retorno esperado
-     *                 Ex: "arrayAssociative" -> Para obter o retorno no formato de um array associativo
-     *                 Ex: "array" -> Para objer o retorno no formato de um array normal
-     * @param {type} callback Função a ser executada ao fim da requisição
-     */
-    googleSheet.getAllRecords = function(returnType, callback){
-       var params ={
-           metodo:"getAllRecords",
-           returnType:returnType
-       };
-       googleSheet.request(params,callback);
-    };
-    
-    /**
-     * Retorna todos os dados das colunas informadas
-     * @param {array} columns Array com os nomes das colunas desejadas 
-     *                  Obs: o nome da coluna deve esta no formato de cabeçalhos normalizados Ex: "Nome Pessoa" -> "nomePessoa"
-     */
-    googleSheet.getColumnData = function(columns,returnType, callback){
-       var params ={
-           metodo:"getColumnData",
-           columns:new Array(columns),
-           returnType:returnType
-       };
-       googleSheet.request(params,callback);
-    };
-    
-    
-    /**
-     * Executa requisoção para API do AppScript
-     * @param {object} params Parâmetros que serão enviados para API
-     * @param {type} callback Funçã
-     */
-    googleSheet.request = function(params,callback){
-        $http({url:_urlApi,
-               method:"jsonp",
-               params:params
-        }).success(function(data, status, headers, config){
-           callback(data.data, data.status, data.message);
-        }).error(function(data, status, headers, config){
-            callback(data.data, data.status, data.message);
-        });     
-        
-    };
-    return googleSheet;
-    
-});
-
