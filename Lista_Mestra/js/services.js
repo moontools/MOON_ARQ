@@ -144,7 +144,7 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
      * @params {string} patchFolder Obs: Casa pasta deve ser separada por /
      */
     this.setPatchFolder = function(patchFolder){
-      folder = patchFolder.split("/") ? patchFolder.split("/") : patchFolder;  
+      folder = patchFolder.split("/") ? patchFolder.split("/") : patchFolder;
     };
     
     /*

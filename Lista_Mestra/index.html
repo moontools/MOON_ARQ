@@ -31,6 +31,7 @@
         <script src="../bower_components/angular-translate/angular-translate.min.js "></script>
         <script src="../bower_components/angular-dialog-service/dist/dialogs-default-translations.min.js" type="text/javascript"></script>
         <script src="../bower_components/angular-dialog-service/example/js/dialogs.min.js" type="text/javascript"></script>
+
         
         <!--JS da aplicação-->
         <script src="js/app.js" type="text/javascript"></script>
@@ -40,6 +41,7 @@
         <!--Libs Moontools-->
         <script src="js/mtlGdrive.js" type="text/javascript"></script>
         <script src="js/mtlGoogleSheet.js" type="text/javascript"></script>
+        <script src="js/mtlAcessos.js" type="text/javascript"></script>
         <script src="js/mtlUtil.js" type="text/javascript"></script>
 
         <!--Estilos próprios--> 
@@ -65,14 +67,14 @@
             
             <!-- Inicio Inputs -->
             <form name="formListaMestra" novalidate ng-submit="salvar()" >
-
+                                                           
                     <!-- Email -->
-                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.usuario.$invalid}">      
+                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.usuario.$invalid || !params.acesso}">      
                         <label class="control-label">Usuário </label>
-                        <small class="help-block" ng-show="formListaMestra.usuario.$invalid">Usuário Inválido</small>
+                        <small class="help-block" ng-show="formListaMestra.usuario.$invalid || !params.acesso">{{params.erroAcesso}}</small>
                         <input type="email"
                                name="usuario"
-                               class="form-control" 
+                               class="form-control"
                                ng-model="registro.usuario" 
                                required
                                ng-disabled="true"
@@ -142,23 +144,20 @@
                         </select>
                     </div> 
                     <!-- Fim Cliente -->
-                          
-                    <!-- Empreendimento -->
-                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.empreendimento.$invalid && !formListaMestra.empreendimento.$pristine}">      
-                        <label class=" control-label">Empreendimento </label>
-                        <small class="help-block" ng-show="formListaMestra.empreendimento.$invalid && !formListaMestra.empreendimento.$pristine">Selecione um empreendimento</small>
-                        <select name="empreendimento"
-                                ng-options="empreendimento.empreendimento as empreendimento.empreendimento for empreendimento in params.empreendimento"
-                                class="form-control"
-                                ng-class="{'spinner' : !params.empreendimento || (formListaMestra.empreendimento.$valid && !formListaMestra.empreendimento.$pristine && !params.bloco)}"
-                                ng-model="registro.empreendimento"
-                                ng-change="showBlocos()"
-                                required>
-                            <option></option>
-                        </select>
+                    
+                    <!-- Empreendimento  -->
+                    <div class="form-group">      
+                        <label class="control-label">Empreendimento </label>
+                        <small class="help-block"></small>
+                        <input type="text"
+                               name="revisao"
+                               class="form-control"
+                               ng-class="{'spinner' : !params.bloco}"
+                               ng-model="registro.empreendimento"
+                               ng-disabled="true">
                     </div> 
-                    <!-- Fim Empreendimento -->
-                                        
+                    <!-- Fim Empreendimento -->  
+                    
                     <!--Bloco-->
                     <div class="form-group animated" ng-class="{'fadeIn' : params.bloco}" ng-show="params.bloco">
                         <label class="control-label">Blocos</label>
@@ -397,12 +396,12 @@
                             <button type="submit" class="btn btn-primary" ng-disabled="formListaMestra.$invalid" >
                                 Salvar
                             </button>
-                            <button type="button" class="btn btn-primary" ng-click="teste()" >
+<!--                            <button type="button" class="btn btn-primary" ng-click="teste()" >
                                 Testar
                             </button>
                             <button type="button" class="btn btn-primary" ng-click="teste2()" >
                                 Testar
-                            </button>
+                            </button>-->
                         
                     </div>
                     <!-- Fim Botão Salvar -->

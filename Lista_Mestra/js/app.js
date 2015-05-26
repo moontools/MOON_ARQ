@@ -1,7 +1,7 @@
 /* 
  * Inicialização do App
  */
-var app = angular.module('listaMestra', ['ui.bootstrap','toggle-switch','dialogs.main','pascalprecht.translate','dialogs.default-translations','mtl.gdrive','mtl.googleSheet','mtl.util']);
+var app = angular.module('listaMestra', ['ui.bootstrap','toggle-switch','dialogs.main','pascalprecht.translate','dialogs.default-translations','mtl.gdrive','mtl.googleSheet','mtl.Acessos','mtl.util']);
 
 /**
  * Configurações dos modais de dialogos 
@@ -34,5 +34,7 @@ app.config(['dialogsProvider','$translateProvider',function(dialogsProvider,$tra
     });
 
     // Define a linguagem padrão para pt-br
-    $translateProvider.preferredLanguage('pt-br');
+    $translateProvider.preferredLanguage('pt-br');    
 }]);
+
+

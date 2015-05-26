@@ -3,7 +3,21 @@
  * @param {object} $scope Scope do Controller
  * @param {object} mtlGdrive Objeto para comunicação com API do Google Drive
  */
-app.controller('formListaMestra',function($rootScope,$scope,$timeout,mtlGdrive,googleSheet,$timeout,$translate,dialogs,lmFiles,util){
+app.controller('formListaMestra',function($rootScope,$scope,$timeout,mtlGdrive,googleSheet,$timeout,$translate,dialogs,lmFiles,util,acessos,configAcessos){
+             
+    // Inicializao o objeto do formulário
+    $scope.registro = new Object();
+    
+    // Incializa o objeto utilzados para carregar parâmetros no formulário
+    $scope.params = new Object();
+    
+    $scope.registro.empreendimento = util.QueryString.empreendimento;
+    
+    // Seta os parâmetros utilizados pela API do Google Drive
+    // e checa a autenticação do usuário
+    mtlGdrive.setClientId('597261259365-0n3ee1mmra5lveal5a014233f4murqef.apps.googleusercontent.com');
+    mtlGdrive.setScopes('https://www.googleapis.com/auth/drive');
+    mtlGdrive.checkAuth();
     
     /**
      * Função padrão para mensagem de erro
@@ -12,12 +26,13 @@ app.controller('formListaMestra',function($rootScope,$scope,$timeout,mtlGdrive,g
      */
     var showError = function(message){
         if(!$scope.showErrorOpen){
-            var dlg = dialogs.error('Erro','Ocorreu um erro inesperado! Tente novamente mais tarde, se o problema persistir informe o erro para Moon Tools.<br/><br/>Error: '+message);
+            var dlg = dialogs.error('Erro','Ocorreu um erro inesperado! Tente novamente mais tarde, se o problema persistir informe o erro para Moon Tools.<br/><br/>Erro: '+message);
             $scope.showErrorOpen = true;
             dlg.result.then(function(btn){
                  $scope.showErrorOpen = false;
             });
-        }   
+        }
+        $rootScope.$broadcast('dialogs.wait.complete');
         return false;
     };
     
@@ -33,69 +48,92 @@ app.controller('formListaMestra',function($rootScope,$scope,$timeout,mtlGdrive,g
     };
     
     // Mostra o Loading na página
-    $scope.messageLoading = "Aguarde...";
+    $scope.messageLoading = "Autenticando usuário...";
     $scope.spinerloading = true;
-  
-    // Seta os parâmetros utilizados pela API do Google Drive
-    // e checa a autenticação do usuário
-    mtlGdrive.setClientId('597261259365-0n3ee1mmra5lveal5a014233f4murqef.apps.googleusercontent.com');
-    mtlGdrive.setScopes('https://www.googleapis.com/auth/drive');
-    mtlGdrive.checkAuth();
+    
+    // Seta parâmetros utilizados pela API do Apps Script
+    googleSheet.setSpreadSheetId('1dfZqj7IIEmYFMioF2_xm_dvhjKAsScHE3PeQgos6Uj8');
+    
+    // Carrega as configurações dos empreendimentos
+    googleSheet.setSheetName('Configurações Empreendimentos');
+    googleSheet.getColumnData(['empreendimento','idPlanilha','idPastaRaiz','emailGrupo'],'associativeArray',function(data, status, message){
+        $scope.params.configEmpreendimentos = status ? data : showError(message);
+        for(var i in $scope.params.configEmpreendimentos){
+            if($scope.registro.empreendimento == $scope.params.configEmpreendimentos[i].empreendimento){
+                $scope.params.emailGrupo = $scope.params.configEmpreendimentos[i].emailGrupo;
+                break;
+            }
+        }
+        if(!$scope.params.emailGrupo){
+            $scope.spinerloading = false;
+            return showError("Empreendimento inválido!");
+        }
+        verificaAcesso($scope.params.emailGrupo);
+    });
+    
+    verificaAcesso = function(emailGrupo){
+        // Verifica se o usuário tem acesso
+        acessos.verificaAcesso(emailGrupo,function(data, status, message){
+            if(status && data){
+
+                $scope.registro.usuario = data;
+                $scope.params.acesso = true;
+                carregaParamsForm();
+            }else if(!status && data){
+                $scope.registro.usuario = data;
+                $scope.params.acesso = false;
+                $scope.params.erroAcesso = message;
+            }else{
+                var dlg = dialogs.error('Erro','Erro ao autenticar usuário. <br>\n\
+                                        Se você estiver acessando esse formulário pela primeira vez, por favor\n\
+                                        acesse o link a seguir e autorize o mesmo:<br><br>\n\
+                                        <a href="'+configAcessos.urlExecApi+'" target="_self">API Acesso</a><br/><br/>');
+                $scope.showErrorOpen = true;
+                dlg.result.then(function(btn){
+                     $scope.showErrorOpen = false;
+                });
+            }
+            $scope.spinerloading = false;
+        });
+    }
+    
     
     /**
      * Inicializa o carregamento dos parâmetros necessário para o funcionamento do formulário 
      * ************************************************************************************************
      **/
+    
+    carregaParamsForm = function(){
+        
+        googleSheet.setSheetName('Parâmetros Formulário');
+        
+        // Carrega o select Cliente
+        googleSheet.getColumnData(["cliente"],"array",function(data, status, message){
+            $scope.params.cliente = data;
+        });
 
-    // Seta parâmetros utilizados pela API do Apps Script
-    googleSheet.setSpreadSheetId('1dfZqj7IIEmYFMioF2_xm_dvhjKAsScHE3PeQgos6Uj8');
-    googleSheet.setSheetName('Parâmetros Formulário');
-    
-    // Incializa o objeto utilzados para carregar parâmetros no formulário
-    $scope.params = new Object();
-              
-    // Carrega o select Cliente
-    googleSheet.getColumnData(["cliente"],"array",function(data, status, message){
-        $scope.params.cliente = data;
-    });
-    
-    // Carrega o select Empreendimento
-    googleSheet.getColumnData(["empreendimento"],"associativeArray",function(data, status, message){
-        $scope.params.empreendimento = status ? data : showError(message);
-    });
-    
-    // Carrega o select Projeto
-    googleSheet.getColumnData(["projeto"],"array",function(data, status, message){
-        $scope.params.projeto = status ? data : showError(message);
-    });
-    
-    // Carrega o select Responsável Técnico
-    googleSheet.getColumnData(["responsavelTecnico"],"array",function(data, status, message){
-        $scope.params.responsavelTecnico = status ? data : showError(message);
-    });
-    
-    // Carrega o select Complemento
-    googleSheet.getColumnData(["detalhamento"],"array",function(data, status, message){
-        $scope.params.detalhamento = status ? data : showError(message);
-    });
-    
-    // Carrega as configurações de localização de arquivos
-    googleSheet.setSheetName('Níveis Gestão');
-    googleSheet.getColumnData(['entregaveis','localizacaoNoSistema'],'associativeArray',function(data, status, message){
-        $scope.params.configArquivos = status ? data : showError(message);
-    });
-    
-    // Carrega as configurações dos empreendimentos
-    googleSheet.setSheetName('Configurações Empreendimentos');
-    googleSheet.getColumnData(['empreendimento','idPlanilha','idPastaRaiz'],'associativeArray',function(data, status, message){
-        $scope.params.configEmpreendimentos = status ? data : showError(message);
-    });
-    
-    /*
-     * Exibe os Blocos dos empreendimentos
-     * @returns {undefined}
-     */
-    $scope.showBlocos = function(){
+        // Carrega o select Projeto
+        googleSheet.getColumnData(["projeto"],"array",function(data, status, message){
+            $scope.params.projeto = status ? data : showError(message);
+        });
+
+        // Carrega o select Responsável Técnico
+        googleSheet.getColumnData(["responsavelTecnico"],"array",function(data, status, message){
+            $scope.params.responsavelTecnico = status ? data : showError(message);
+        });
+
+        // Carrega o select Complemento
+        googleSheet.getColumnData(["detalhamento"],"array",function(data, status, message){
+            $scope.params.detalhamento = status ? data : showError(message);
+        });
+
+        // Carrega as configurações de localização de arquivos
+        googleSheet.setSheetName('Níveis Gestão');
+        googleSheet.getColumnData(['entregaveis','localizacaoNoSistema'],'associativeArray',function(data, status, message){
+            $scope.params.configArquivos = status ? data : showError(message);
+        });
+
+        //Exibe os Blocos dos empreendimentos
         $scope.params.bloco = null;
         googleSheet.setSheetName("Parâmetros Formulário");
         if($scope.registro.empreendimento)
@@ -108,6 +146,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$timeout,mtlGdrive,g
      * Adiciona elementos ao input complemento
      */
     $scope.showComplementos = function(){
+        googleSheet.setSpreadSheetId('1dfZqj7IIEmYFMioF2_xm_dvhjKAsScHE3PeQgos6Uj8');
         googleSheet.setSheetName("Parâmetros Formulário");
         $scope.params.complemento = null;
         $scope.registro.complemento = "";
@@ -129,13 +168,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$timeout,mtlGdrive,g
      * ************************************************************************************************
      * FIM Carregamento dos parâmetros
      **/
-        
-    // Inicializao o objeto do formulário
-    $scope.registro = new Object();
-    $scope.registro.usuario = "deividi@moontools.com.br";
-    $scope.registro.revisao = 0;
-    $scope.spinerloading = false;
-    
+
     /**
      * Função executada quando o formulário é submetido
      * @returns {undefined}
@@ -238,8 +271,10 @@ app.controller('formListaMestra',function($rootScope,$scope,$timeout,mtlGdrive,g
                     lmFiles.setFile(arrayArquivos[0].file,nomeArquivo);
                     // Iniciar o upload do arquivo
                     lmFiles.uploadFile(function(status,data,message){
-                        if(!status)
+                        if(!status){
+                            
                             return showError(message);
+                        }
                         $scope.registro[arrayArquivos[0].id] = data;
                         // Atualiza o progresso da operação 
                         _progress = _progress + 25;
@@ -279,7 +314,12 @@ app.controller('formListaMestra',function($rootScope,$scope,$timeout,mtlGdrive,g
                                 dialogs.notify("Status",message);
                                 // Reseta o formulário
                                 $scope.formListaMestra.$setPristine();
+                                var auxEmp = $scope.registro.empreendimento;
+                                var auxUsr = $scope.registro.usuario;
                                 $scope.registro = {};
+                                $scope.registro.empreendimento = auxEmp;
+                                $scope.registro.usuario = auxUsr;
+                                $scope.params.complemento = null;
                             }else{
                                 dialogs.error("Erro",message);
                             }  

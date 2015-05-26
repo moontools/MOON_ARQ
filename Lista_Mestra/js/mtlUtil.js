@@ -77,10 +77,39 @@
             }
             return nova;
         };
+        
+        // Captura os parâmetros da URL
+        this.QueryString = function () {
+            // Utilizar no Google App Scrip iFrame
+            //var loc = document.referrer;
+            //var query = decodeURIComponent(loc.split('?')[2]);
+
+            // This function is anonymous, is executed immediately and 
+            // the return value is assigned to QueryString!
+            var query_string = {};
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            for (var i=0;i<vars.length;i++) {
+              var pair = vars[i].split("=");
+                  // If first entry with this name
+              if (typeof query_string[pair[0]] === "undefined") {
+                query_string[pair[0]] = decodeURI(pair[1]);
+                  // If second entry with this name
+              } else if (typeof query_string[pair[0]] === "string") {
+                var arr = [ query_string[pair[0]], decodeURI(pair[1]) ];
+                query_string[pair[0]] = arr;
+                  // If third or later entry with this name
+              } else {
+                query_string[pair[0]].push(decodeURI(pair[1]));
+              }
+            } 
+              return query_string;
+        } ();
+        
   
     })
     /*
-    * Diretiva para transformar todos os textos dos inputs em maiúsculo
+    * Diretiva para transformar todos os textos dos inputs em UpperCase
     */
    .directive('capitalize', function() {
       return {
@@ -102,7 +131,7 @@
    })
    
    /**
-    * Diretira para obter o arquivo dos imputs type file
+    * Diretira para obter o arquivo dos inputs type file
     */
    .directive("fileread", [function () {
        return {

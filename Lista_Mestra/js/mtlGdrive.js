@@ -20,7 +20,7 @@
         /**
         * Verifica se o usuário corrente autorizou a aplicação
         */
-        driveApi.checkAuth = function() {
+        driveApi.checkAuth = function(callback) {
             // Verifica se a API do Google foi carregada
             if (typeof gapi.auth !== 'undefined') {
                 // Caso positivo verifica a autorização do usuário
@@ -53,6 +53,7 @@
             if (authResult && !authResult.error) {
                 console.log("Autenticado com sucesso!");
             }else{
+                
                 // Caso negativo exibe tela de autenticação
                 gapi.auth.authorize(
                       {'client_id': _clientId, 'scope': _scopes, 'immediate': false},
@@ -222,6 +223,7 @@
             request(params,callback);
         };
 
+        driveApi.checkAuth()
         /**
          * Faz requisição pra a API do Drive
          * @param {type} params parâmetros da requisição
