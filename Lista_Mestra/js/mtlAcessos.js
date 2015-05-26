@@ -8,17 +8,31 @@
     
         var _urlApi = localStorage.development == "true"? configAcessos.urlDevApi : configAcessos.urlExecApi;
         
-        this.verificaAcesso = function(group,callback){
-            $http({url:_urlApi+'?callback=JSON_CALLBACK',
+        this.getAccessByGroup = function(group,callback){
+            var params = {
+                'method' : 'getAccessByGroup',
+                'groupEmail': group
+            };  
+            request(params,callback);
+        };
+        
+        this.getUser = function(callback){
+            var params = {
+                'method' : 'getUser'
+            };  
+            request(params,callback);
+        };
+        
+        var request = function(params,callback){
+          $http({url:_urlApi+'?callback=JSON_CALLBACK',
                    method:"jsonp",
-                   params:{
-                       'groupEmail': group,
-                   }
+                   params:params
             }).success(function(data, status, headers, config, statusText){
                callback(data.data, data.status, data.message);
             }).error(function(data, status, headers, config, statusText){
                callback(data, false, status);
-            })     
-        };     
+            })  
+        };
+        
     });
 })();

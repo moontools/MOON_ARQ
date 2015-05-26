@@ -73,8 +73,11 @@
 
         scope.toggle = function toggle() {
           if(!scope.disabled) {
+//            scope.model = !scope.model;
+//            ngModelCtrl.$setViewValue(scope.model);
             scope.model = !scope.model;
             ngModelCtrl.$setViewValue(scope.model);
+            console.log(scope.model);
           }
         };
       }

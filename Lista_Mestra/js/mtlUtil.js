@@ -133,20 +133,28 @@
    /**
     * Diretira para obter o arquivo dos inputs type file
     */
-   .directive("fileread", [function () {
-       return {
-           scope: {
+    .directive("fileread", [function () {
+        return {
+            scope: {
                fileread: "="
-           },
-           link: function (scope, element, attributes) {
-               element.bind("change", function (changeEvent) {
-                   scope.$apply(function () {
-                       scope.fileread = changeEvent.target.files[0];
-                   });
-               });
-           }
-       };
-   }]);
-   
+            },
+            link: function (scope, element, attributes) {
+               
+                element.bind("change", function (changeEvent) {
+                    scope.$apply(function () {
+                        scope.fileread = changeEvent.target.files[0];
+                    });
+                    scope.$watch(scope.fileread, function(file) {
+                        try{
+                            console.log(scope.fileread);
+                            element.val(scope.fileread);
+                        }catch(e){}
+                    });
+                });
+                
+            }
+        };
+    }]);
+  
    
 })();

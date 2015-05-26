@@ -3,13 +3,12 @@
  * @param {object} $scope Scope do Controller
  * @param {object} mtlGdrive Objeto para comunicação com API do Google Drive
  */
-app.controller('formListaMestra',function($rootScope,$scope,$timeout,mtlGdrive,googleSheet,$timeout,$translate,dialogs,lmFiles,util,acessos,configAcessos){
+app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtlGdrive,googleSheet,$timeout,$translate,dialogs,lmFiles,util,acessos,configAcessos){
              
-    // Inicializao o objeto do formulário
+    // Inicializao o objetos utilizados pelo formulário
     $scope.registro = new Object();
-    
-    // Incializa o objeto utilzados para carregar parâmetros no formulário
     $scope.params = new Object();
+    $scope.buttons = new Object();
     
     $scope.registro.empreendimento = util.QueryString.empreendimento;
     
@@ -59,7 +58,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$timeout,mtlGdrive,g
     googleSheet.getColumnData(['empreendimento','idPlanilha','idPastaRaiz','emailGrupo'],'associativeArray',function(data, status, message){
         $scope.params.configEmpreendimentos = status ? data : showError(message);
         for(var i in $scope.params.configEmpreendimentos){
-            if($scope.registro.empreendimento == $scope.params.configEmpreendimentos[i].empreendimento){
+            if($scope.registro.empreendimento === $scope.params.configEmpreendimentos[i].empreendimento){
                 $scope.params.emailGrupo = $scope.params.configEmpreendimentos[i].emailGrupo;
                 break;
             }
@@ -73,7 +72,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$timeout,mtlGdrive,g
     
     verificaAcesso = function(emailGrupo){
         // Verifica se o usuário tem acesso
-        acessos.verificaAcesso(emailGrupo,function(data, status, message){
+        acessos.getAccessByGroup(emailGrupo,function(data, status, message){
             if(status && data){
 
                 $scope.registro.usuario = data;
@@ -85,7 +84,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$timeout,mtlGdrive,g
                 $scope.params.erroAcesso = message;
             }else{
                 var dlg = dialogs.error('Erro','Erro ao autenticar usuário. <br>\n\
-                                        Se você estiver acessando esse formulário pela primeira vez, por favor\n\
+                                        Se você estiver acessando este formulário pela primeira vez, por favor\n\
                                         acesse o link a seguir e autorize o mesmo:<br><br>\n\
                                         <a href="'+configAcessos.urlExecApi+'" target="_self">API Acesso</a><br/><br/>');
                 $scope.showErrorOpen = true;
@@ -95,7 +94,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$timeout,mtlGdrive,g
             }
             $scope.spinerloading = false;
         });
-    }
+    };
     
     
     /**
@@ -206,9 +205,9 @@ app.controller('formListaMestra',function($rootScope,$scope,$timeout,mtlGdrive,g
         })();
         
         // Faz o tratamento das indicações das pastas
-        $scope.registro.servidorTerra = $scope.registro.servidorTerra ? "SIM":"NÃO";
-        $scope.registro.pastaFisicaCliente = $scope.registro.pastaFisicaCliente ? "SIM":"NÃO";
-        $scope.registro.pastaFisicaTerra = $scope.registro.pastaFisicaTerra ? "SIM":"NÃO";
+        $scope.registro.servidorTerra = $scope.buttons.ServidorTerra ? "SIM":"NÃO";
+        $scope.registro.pastaFisicaCliente = $scope.buttons.PastaFisicaCliente ? "SIM":"NÃO";
+        $scope.registro.pastaFisicaTerra = $scope.buttons.PastaFisicaTerra ? "SIM":"NÃO";
         
         // Faz o tratamento da informação Blocos
         var auxBlocos = "";
@@ -259,6 +258,52 @@ app.controller('formListaMestra',function($rootScope,$scope,$timeout,mtlGdrive,g
             nomeArquivo += $scope.registro.blocos? " BLOCOS "+$scope.registro.blocos : "";
             nomeArquivo += $scope.registro.numeroPrancha? " "+$scope.registro.numeroPrancha : "";
             nomeArquivo += " "+$scope.registro.descricaoArquivo;
+         
+        // Formata a data
+        $scope.registro.dataDocumento = $filter('date')($scope.registro.dataDocumento,'yyyy-MM-dd');
+                
+        /*
+         * Inicia a gravação dos dados na planilha do Google
+         */        
+        gravaDadosPlanilha = function(){
+            // Seta o ID da planilha e nome da página a serem gravados os dados
+            googleSheet.setSpreadSheetId(idPlanilha);
+            googleSheet.setSheetName('Índice Projetos');
+            _progressMessage = "Gravando dados na planilha...";
+            // Insere o registro na planilha
+            googleSheet.insertRecord($scope.registro,function(data, status, message){
+                // Atualiza o progresso da operação 
+                _progress = _progress + 25;
+                // Verifica se o processo de inserção dos dados e gravação dos arquivos terminou
+                (verificaTermino = function(){
+                    $timeout(function(){
+                        if(_progress>=100){
+                            $rootScope.$broadcast('dialogs.wait.complete');
+                            // Verifica o status retornado pelo request
+                            if(status){
+                                dialogs.notify("Status",message);
+                                // Reseta o formulário
+                                $scope.formListaMestra.$setPristine();
+                                var auxEmp = $scope.registro.empreendimento;
+                                var auxUsr = $scope.registro.usuario;
+                                $scope.buttons = {};
+                                $scope.registro = {};
+                                $scope.registro.arquivoEditavel = null;
+                                $scope.registro.arquivoImpressao = null;
+                                $scope.registro.arquivoPdf = null;
+                                $scope.registro.empreendimento = auxEmp;
+                                $scope.registro.usuario = auxUsr;
+                                $scope.params.complemento = null;
+                            }else{
+                                dialogs.error("Erro",message);
+                            }  
+                        }else{
+                           verificaTermino();
+                        }   
+                    },1000);   
+                })();
+            });
+        };    
         
         // Iniciar a verificação de arquivos para upload
         (uploadFile = function(){
@@ -291,46 +336,6 @@ app.controller('formListaMestra',function($rootScope,$scope,$timeout,mtlGdrive,g
                 gravaDadosPlanilha();
             }
         })();
-        
-        /*
-         * Inicia a gravação dos dados na planilha do Google
-         */        
-        gravaDadosPlanilha = function(){
-            // Seta o ID da planilha e nome da página a serem gravados os dados
-            googleSheet.setSpreadSheetId(idPlanilha);
-            googleSheet.setSheetName('Índice Projetos');
-            _progressMessage = "Gravando dados na planilha...";
-            // Insere o registro na planilha
-            googleSheet.insertRecord($scope.registro,function(data, status, message){
-                // Atualiza o progresso da operação 
-                _progress = _progress + 25;
-                // Verifica se o processo de inserção dos dados e gravação dos arquivos terminou
-                (verificaTermino = function(){
-                    $timeout(function(){
-                        if(_progress>=100){
-                            $rootScope.$broadcast('dialogs.wait.complete');
-                            // Verifica o status retornado pelo request
-                            if(status){
-                                dialogs.notify("Status",message);
-                                // Reseta o formulário
-                                $scope.formListaMestra.$setPristine();
-                                var auxEmp = $scope.registro.empreendimento;
-                                var auxUsr = $scope.registro.usuario;
-                                $scope.registro = {};
-                                $scope.registro.empreendimento = auxEmp;
-                                $scope.registro.usuario = auxUsr;
-                                $scope.params.complemento = null;
-                            }else{
-                                dialogs.error("Erro",message);
-                            }  
-                        }else{
-                           verificaTermino();
-                        }   
-                    },1000);   
-                })();
-            });
-        };    
-        
         
         
     };
@@ -366,7 +371,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$timeout,mtlGdrive,g
     };
     
     $scope.teste2 = function(){
-        $scope.testeAnimation = $scope.testeAnimation ? false: true;
+        $scope.registro.arquivoPdf = null;
     };
 
     
