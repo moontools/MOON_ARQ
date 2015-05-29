@@ -83,7 +83,7 @@
          * @param {Function} callback Função a ser executada ao final da requisição.
          */
         driveApi.insertFile = function(fileData,title,parents,callback) {
-            boundary = '-------314159265358979323846';
+            boundary = '-------';
             delimiter = "\r\n--" + boundary + "\r\n";
             close_delim = "\r\n--" + boundary + "--";
             var reader = new FileReader();
@@ -114,7 +114,7 @@
                   '\r\n' +
                   base64Data +
                   close_delim;
-
+   
               var request = gapi.client.request({
                   'path': '/upload/drive/v2/files',
                   'method': 'POST',

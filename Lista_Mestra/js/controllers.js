@@ -3,7 +3,7 @@
  * @param {object} $scope Scope do Controller
  * @param {object} mtlGdrive Objeto para comunicação com API do Google Drive
  */
-app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtlGdrive,googleSheet,$timeout,$translate,dialogs,lmFiles,util,acessos,configAcessos){
+app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeout,mtlGdrive,googleSheet,$timeout,$translate,dialogs,lmFiles,util,acessos,configAcessos){
              
     // Inicializao o objetos utilizados pelo formulário
     $scope.registro = new Object();
@@ -117,14 +117,27 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
         });
 
         // Carrega o select Responsável Técnico
-        googleSheet.getColumnData(["responsavelTecnico"],"array",function(data, status, message){
+        googleSheet.getColumnData([util.normalizeHeaders("Responsável Tecnico "+$scope.registro.empreendimento)],"array",function(data, status, message){
             $scope.params.responsavelTecnico = status ? data : showError(message);
         });
 
-        // Carrega o select Complemento
-        googleSheet.getColumnData(["detalhamento"],"array",function(data, status, message){
-            $scope.params.detalhamento = status ? data : showError(message);
-        });
+        $scope.showDetalhamentos = function(){
+           googleSheet.setSpreadSheetId('1dfZqj7IIEmYFMioF2_xm_dvhjKAsScHE3PeQgos6Uj8');
+           googleSheet.setSheetName("Parâmetros Formulário");
+           $scope.params.detalhamento = null;
+           $scope.registro.detalhamento = "";
+           googleSheet.getColumnData(['pertenceAoComplemento','detalhamento'],'associativeArray',function(data, status, message){
+               if(status){
+                   $scope.params.detalhamento = [];
+                   angular.forEach(data,function(object){
+                      if(object.pertenceAoComplemento === $scope.registro.complemento)
+                      $scope.params.detalhamento.push(object.detalhamento); 
+                   });
+               }else{
+                   showError(message);
+               }
+           });
+        }
 
         // Carrega as configurações de localização de arquivos
         googleSheet.setSheetName('Níveis Gestão');
@@ -139,29 +152,30 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
             googleSheet.getColumnData([util.normalizeHeaders('Blocos '+$scope.registro.empreendimento)],'array',function(data, status, message){
                 $scope.params.bloco = status ? data : showError(message);
             });
+        
+        
+        /*
+        * Adiciona elementos ao input complemento
+        */
+       $scope.showComplementos = function(){
+           googleSheet.setSpreadSheetId('1dfZqj7IIEmYFMioF2_xm_dvhjKAsScHE3PeQgos6Uj8');
+           googleSheet.setSheetName("Parâmetros Formulário");
+           $scope.params.complemento = null;
+           $scope.registro.complemento = "";
+           googleSheet.getColumnData(['pertenceAoProjeto','complemento'],'associativeArray',function(data, status, message){
+               if(status){
+                   $scope.params.complemento = [];
+                   angular.forEach(data,function(object){
+                      if(object.pertenceAoProjeto === $scope.registro.projeto)
+                      $scope.params.complemento.push(object.complemento); 
+                   });
+               }else{
+                   showError(message);
+               }
+           });
+       };
     };
-    
-    /*
-     * Adiciona elementos ao input complemento
-     */
-    $scope.showComplementos = function(){
-        googleSheet.setSpreadSheetId('1dfZqj7IIEmYFMioF2_xm_dvhjKAsScHE3PeQgos6Uj8');
-        googleSheet.setSheetName("Parâmetros Formulário");
-        $scope.params.complemento = null;
-        $scope.registro.complemento = "";
-        googleSheet.getColumnData(['pertenceAoProjeto','complemento'],'associativeArray',function(data, status, message){
-            if(status){
-                $scope.params.complemento = [];
-                angular.forEach(data,function(object){
-                   if(object.pertenceAoProjeto === $scope.registro.projeto)
-                   $scope.params.complemento.push(object.complemento); 
-                });
-            }else{
-                showError(message);
-            }
-        });
-    };
-   
+  
     
     /**
      * ************************************************************************************************
@@ -174,7 +188,6 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
      */
     $scope.salvar = function(){
         var dlg = dialogs.confirm("Confirmação","Deseja realmente gravar o registro ?");
-        console.log($scope.registro);
         dlg.result.then(function(btn){
              $scope.confirmSalvar();
         },function(btn){
@@ -222,7 +235,6 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
         }
         delete $scope.registro.outroDetalhamento;
         
-        
         // Procura pelas propriedades do empreendimento
         for(var i = 0; i < $scope.params.configEmpreendimentos.length; i++){
             if($scope.params.configEmpreendimentos[i].empreendimento === $scope.registro.empreendimento){
@@ -238,6 +250,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
         for(var i = 0; i < $scope.params.configArquivos.length; i++){
             if($scope.params.configArquivos[i].entregaveis === entregavel){
                 $scope.params.folderDestino = $scope.params.configArquivos[i].localizacaoNoSistema;
+                $scope.params.folderDestino = $scope.params.folderDestino.replace(/{%EMP%}/g, $scope.registro.empreendimento);
                 break;
             }
         }
@@ -283,17 +296,17 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
                             if(status){
                                 dialogs.notify("Status",message);
                                 // Reseta o formulário
-                                $scope.formListaMestra.$setPristine();
+                                document.getElementsByName("arquivoEditavel")[0].value = null;
+                                document.getElementsByName("arquivoImpressao")[0].value = null;
+                                document.getElementsByName("arquivoPdf")[0].value = null;
                                 var auxEmp = $scope.registro.empreendimento;
                                 var auxUsr = $scope.registro.usuario;
                                 $scope.buttons = {};
                                 $scope.registro = {};
-                                $scope.registro.arquivoEditavel = null;
-                                $scope.registro.arquivoImpressao = null;
-                                $scope.registro.arquivoPdf = null;
                                 $scope.registro.empreendimento = auxEmp;
                                 $scope.registro.usuario = auxUsr;
                                 $scope.params.complemento = null;
+                                $scope.formListaMestra.$setPristine();
                             }else{
                                 dialogs.error("Erro",message);
                             }  
@@ -359,7 +372,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
 //            }
 //        }
 
-        lmFiles.setFolderRaiz("0B7C12ldJ-VYWTzlwN0RKeklmNFU");
+        lmFiles.setFolderRaiz(null);
         lmFiles.setPatchFolder("ARQ/ 02 Parcelamento do Solo/ 01 Retificação");
         lmFiles.setFile($scope.registro.arquivoPdf,"TESTE");
         lmFiles.uploadFile(function(status,data,message){
@@ -371,7 +384,115 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
     };
     
     $scope.teste2 = function(){
-        $scope.registro.arquivoPdf = null;
+
+
+        insertFile = function(param1,dados) {
+                
+                console.log(JSON.parse(dados));
+
+                var urlPut = JSON.parse(dados).gapiRequest.data.headers.location;
+                
+                var params = urlPut.split("?");
+                var idFile = params[1].split("&")[1];
+                idFile = idFile.split("=")[1];
+                
+                var fileData = $scope.registro.arquivoPdf;
+                var title = "Teste";
+                var parents = null;
+
+                boundary = '-------';
+                delimiter = "\r\n--" + boundary + "\r\n";
+                close_delim = "\r\n--" + boundary + "--";
+                var reader = new FileReader();
+                reader.readAsBinaryString(fileData);
+                reader.onload = function(e) {
+                    var contentType = fileData.type || 'application/octet-stream';
+                    var metadata = {
+                      'title': !title ? fileData.name : title+"."+fileData.name.split(".")[fileData.name.split(".").length-1],
+                      'mimeType': contentType
+                    };
+                    var base64Data = btoa(reader.result);
+                    var multipartRequestBody =
+                        delimiter +
+                        'Content-Type: application/json\r\n\r\n' +
+                        JSON.stringify(metadata) +
+                        delimiter +
+                        'Content-Type: ' + contentType + '\r\n' +
+                        'Content-Transfer-Encoding: base64\r\n' +
+                        '\r\n' +
+                        base64Data +
+                        close_delim;
+                    
+                    var request = gapi.client.request({
+                        path: urlPut,
+                        method:"PUT",
+                        headers: {'Authorization': 'Bearer '+gapi.auth.getToken().access_token,
+                                  'Content-Type': contentType,
+                                  "Content-Encoding": "base64"},
+                        body: base64Data
+                    });
+                    
+                    
+                    
+
+                    var callback = function(param1,param2,param3) {
+                      console.log(param1);
+                      console.log(JSON.parse(param2));
+                      console.log(param3);
+                    };
+
+                    request.execute(callback);
+                    
+                    var request = gapi.client.request({
+                      path: urlPut,
+                      method:'PUT',
+                      headers: {'Authorization': 'Bearer '+gapi.auth.getToken().access_token,
+                                  'Content-Range':'*/*'},
+                    });
+
+                    request.execute(function(param1,param2,param3){
+                        console.log(param1);
+                        console.log(param2);
+                        console.log(param3);
+                    })
+                };
+        };
+        
+        startSession = function(authResult) {
+                
+                var fileData = $scope.registro.arquivoPdf;
+                var title = "Teste";
+                var parents = null;
+                boundary = '-------';
+                var reader = new FileReader();
+                reader.readAsBinaryString(fileData);
+                reader.onload = function(e) {
+                    var contentType = fileData.type || 'application/octet-stream';
+                    
+                    var request = gapi.client.request({
+                        path: '/upload/drive/v2/files',
+                        method:"POST",
+                        
+                        headers: {'Authorization': 'Bearer '+gapi.auth.getToken().access_token,
+                                  'Content-Type' : 'application/json; charset=UTF-8',
+                                  'X-Upload-Content-Type': contentType},
+                        params : {uploadType: 'resumable'},
+                        body:{
+                            'title': !title ? fileData.name : title+"."+fileData.name.split(".")[fileData.name.split(".").length-1]
+                        }
+                    });
+
+                    request.execute(insertFile);
+                   
+                };
+        };
+        
+        var _clientId= '597261259365-0n3ee1mmra5lveal5a014233f4murqef.apps.googleusercontent.com';
+        var _scopes = 'https://www.googleapis.com/auth/drive';
+        gapi.auth.authorize(
+                       {'client_id': _clientId, 'scope': _scopes, 'immediate': true},
+                       startSession);   
+    
     };
 
     

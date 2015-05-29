@@ -155,7 +155,7 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
         console.log("Vou inserir o arquivo "+fileData);
         if(!fileData)
             return error("Tentativa de upload de arquivo inválido.");
-        mtlGdrive.insertFile(fileData,titleFile,[parents],function(result){
+        mtlGdrive.insertFile(fileData,titleFile,parents,function(result){
             if(result.error)
                 return error(result.error.message);
             console.log("Inseri o arquivo");
@@ -173,8 +173,11 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
         try{
             // Indica que o processo iniciou
             processing = true;
-            descobreFilhos(idFolderRaiz,folder);
-            
+            if(!idFolderRaiz){
+                saveFile(null);
+            }else{
+                descobreFilhos(idFolderRaiz,folder);
+            }
             // Entra em looping esperando o processo terminar
             (checkStatus = function(){
                 $timeout(function(){

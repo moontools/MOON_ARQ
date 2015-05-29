@@ -130,31 +130,28 @@
       };
    })
    
-   /**
-    * Diretira para obter o arquivo dos inputs type file
-    */
+//   /**
+//    * Diretira para obter o arquivo dos inputs type file
+//    */
     .directive("fileread", [function () {
         return {
+            restrict:"A",
             scope: {
                fileread: "="
             },
-            link: function (scope, element, attributes) {
-               
+            link: function (scope, element, attr) {
                 element.bind("change", function (changeEvent) {
                     scope.$apply(function () {
                         scope.fileread = changeEvent.target.files[0];
                     });
-                    scope.$watch(scope.fileread, function(file) {
-                        try{
-                            console.log(scope.fileread);
-                            element.val(scope.fileread);
-                        }catch(e){}
+                    scope.$watch(scope.fileread,function(){
+                        if(!scope.fileread){
+                          element.empty();
+                          element.val(null);
+                        }
                     });
                 });
-                
             }
         };
-    }]);
-  
-   
+    }]); 
 })();

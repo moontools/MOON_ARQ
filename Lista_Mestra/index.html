@@ -53,7 +53,7 @@
     <body ng-controller="formListaMestra">
         <div id="loading-div-background" ng-show="spinerloading">
             <div id="loading-div" class="ui-corner-all" >
-                    <img src="css/images/loading.gif" alt="Loading.."/>
+                    <img src="images/gif_moontools_reducido.gif" alt="Loading.."/>
                     <h2 id="mensageLoading">{{messageLoading}}</h2>
             </div> 
         </div>
@@ -196,23 +196,25 @@
                         <select name="complemento"
                                 ng-options="complemento as complemento for complemento in params.complemento"
                                 class="form-control"
-                                ng-model="registro.complemento" 
-                                ng-required="params.complemento.length > 0">
+                                ng-class="{'spinner' : !params.complemento || (formListaMestra.complemento.$valid && !formListaMestra.complemento.$pristine && !params.detalhamento)}"
+                                ng-model="registro.complemento"
+                                ng-required="registro.complemento"
+                                ng-change="showDetalhamentos()">
                             <option></option>
                         </select>
                     </div> 
                     <!-- Fim Complemento -->
                     
                     <!-- Detalhamento -->
-                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.detalhamento.$invalid && !formListaMestra.detalhamento.$pristine}">      
+                    <div class="form-group animated" ng-class="{'fadeIn' : params.detalhamento.length > 0}" ng-show="params.detalhamento.length > 0" ng-class="{ 'has-error' : formListaMestra.detalhamento.$invalid && !formListaMestra.detalhamento.$pristine}">      
                         <label class="control-label">Detalhamento </label>
                         <small class="help-block" ng-show="formListaMestra.detalhamento.$invalid && !formListaMestra.detalhamento.$pristine">Selecione um detalhamento</small>
                         <select name="detalhamento"
-                                ng-options="detalhamento[0] as detalhamento[0] for detalhamento in params.detalhamento"
+                                ng-options="detalhamento as detalhamento for detalhamento in params.detalhamento"
                                 class="form-control"
                                 ng-class="{'spinner' : !params.detalhamento}"
                                 ng-model="registro.detalhamento" 
-                                required>
+                                ng-required = "params.detalhamento.length > 0">
                             <option></option>
                         </select>
                     </div> 
@@ -257,11 +259,13 @@
                         </div>
                     <!-- Fim Arquivo Editavel -->
                     
+                    
                     <!-- Arquivo Impressão -->
                     <div class="form-group">      
                         <label class="control-label">Arquivo impressão </label>
                         <small></small>
                         <input type="file"
+                               name="arquivoImpressao"
                                class="form-control" 
                                fileread="registro.arquivoImpressao"
                                ng-model="registro.arquivoImpressao"
@@ -274,6 +278,7 @@
                         <label class=" control-label">Arquivo PDF </label>
                         <small></small>
                         <input type="file"
+                               name="arquivoPdf"
                                class="form-control"
                                fileread="registro.arquivoPdf"
                                ng-model="registro.arquivoPdf"

@@ -76,12 +76,12 @@ select:required:valid {
 }
 
 input.spinner{
-    background: #fff url(https://googledrive.com/host/0B7C12ldJ-VYWLUw3Unl4d1NPcUk/loading.gif) no-repeat center right 8px !important;
+    background: #fff url(../images/gif_moontools_reducido.gif)no-repeat center right 8px !important;
     background-size: 20px !important;  
 }
 
 select.spinner{
-   background: #fff url(https://googledrive.com/host/0B7C12ldJ-VYWLUw3Unl4d1NPcUk/loading.gif) no-repeat center right 22px !important;
+   background: #fff url(../images/gif_moontools_reducido.gif) no-repeat center right 22px !important;
    background-size: 20px !important;
 }
 
