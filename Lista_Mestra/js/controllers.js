@@ -202,7 +202,7 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
     $scope.confirmSalvar = function(){
         
         // Inicializa o progresso da operação salvar 
-        var _progress = 0;
+        var _progress = 5;
         var _progressMessage = "Processando...";
         var dlg = dialogs.wait("Aguarde.",_progressMessage,_progress);
         
@@ -354,146 +354,11 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
     };
     
     $scope.teste = function(){
-        
-//        // Procura pelas propriedades do empreendimento
-//        for(var i = 0; i < $scope.params.configEmpreendimentos.length; i++){
-//            if($scope.params.configEmpreendimentos[i].empreendimento === $scope.registro.empreendimento){
-//                var idPlanilha = $scope.params.configEmpreendimentos[i].idPlanilha;
-//                $scope.params.idPastaRaiz = $scope.params.configEmpreendimentos[i].idPastaRaiz;
-//                break;
-//            }
-//        }
-//        // Busca pelas configurações de localização dos arquivos
-//        var entregavel = $scope.registro.projeto+" "+$scope.registro.complemento;
-//        for(var i = 0; i < $scope.params.configArquivos.length; i++){
-//            if($scope.params.configArquivos[i].entregaveis === entregavel){
-//                $scope.params.folderDestino = $scope.params.configArquivos[i].localizacaoNoSistema;
-//                break;
-//            }
-//        }
-
-        lmFiles.setFolderRaiz(null);
-        lmFiles.setPatchFolder("ARQ/ 02 Parcelamento do Solo/ 01 Retificação");
-        lmFiles.setFile($scope.registro.arquivoPdf,"TESTE");
-        lmFiles.uploadFile(function(status,data,message){
-            if(!status)
-                showError(message);
-        });
-        
-        
+       
     };
     
     $scope.teste2 = function(){
-
-
-        insertFile = function(param1,dados) {
-                
-                console.log(JSON.parse(dados));
-
-                var urlPut = JSON.parse(dados).gapiRequest.data.headers.location;
-                
-                var params = urlPut.split("?");
-                var idFile = params[1].split("&")[1];
-                idFile = idFile.split("=")[1];
-                
-                var fileData = $scope.registro.arquivoPdf;
-                var title = "Teste";
-                var parents = null;
-
-                boundary = '-------';
-                delimiter = "\r\n--" + boundary + "\r\n";
-                close_delim = "\r\n--" + boundary + "--";
-                var reader = new FileReader();
-                reader.readAsBinaryString(fileData);
-                reader.onload = function(e) {
-                    var contentType = fileData.type || 'application/octet-stream';
-                    var metadata = {
-                      'title': !title ? fileData.name : title+"."+fileData.name.split(".")[fileData.name.split(".").length-1],
-                      'mimeType': contentType
-                    };
-                    var base64Data = btoa(reader.result);
-                    var multipartRequestBody =
-                        delimiter +
-                        'Content-Type: application/json\r\n\r\n' +
-                        JSON.stringify(metadata) +
-                        delimiter +
-                        'Content-Type: ' + contentType + '\r\n' +
-                        'Content-Transfer-Encoding: base64\r\n' +
-                        '\r\n' +
-                        base64Data +
-                        close_delim;
-                    
-                    var request = gapi.client.request({
-                        path: urlPut,
-                        method:"PUT",
-                        headers: {'Authorization': 'Bearer '+gapi.auth.getToken().access_token,
-                                  'Content-Type': contentType,
-                                  "Content-Encoding": "base64"},
-                        body: base64Data
-                    });
-                    
-                    
-                    
-
-                    var callback = function(param1,param2,param3) {
-                      console.log(param1);
-                      console.log(JSON.parse(param2));
-                      console.log(param3);
-                    };
-
-                    request.execute(callback);
-                    
-                    var request = gapi.client.request({
-                      path: urlPut,
-                      method:'PUT',
-                      headers: {'Authorization': 'Bearer '+gapi.auth.getToken().access_token,
-                                  'Content-Range':'*/*'},
-                    });
-
-                    request.execute(function(param1,param2,param3){
-                        console.log(param1);
-                        console.log(param2);
-                        console.log(param3);
-                    })
-                };
-        };
-        
-        startSession = function(authResult) {
-                
-                var fileData = $scope.registro.arquivoPdf;
-                var title = "Teste";
-                var parents = null;
-                boundary = '-------';
-                var reader = new FileReader();
-                reader.readAsBinaryString(fileData);
-                reader.onload = function(e) {
-                    var contentType = fileData.type || 'application/octet-stream';
-                    
-                    var request = gapi.client.request({
-                        path: '/upload/drive/v2/files',
-                        method:"POST",
-                        
-                        headers: {'Authorization': 'Bearer '+gapi.auth.getToken().access_token,
-                                  'Content-Type' : 'application/json; charset=UTF-8',
-                                  'X-Upload-Content-Type': contentType},
-                        params : {uploadType: 'resumable'},
-                        body:{
-                            'title': !title ? fileData.name : title+"."+fileData.name.split(".")[fileData.name.split(".").length-1]
-                        }
-                    });
-
-                    request.execute(insertFile);
-                   
-                };
-        };
-        
-        var _clientId= '597261259365-0n3ee1mmra5lveal5a014233f4murqef.apps.googleusercontent.com';
-        var _scopes = 'https://www.googleapis.com/auth/drive';
-        gapi.auth.authorize(
-                       {'client_id': _clientId, 'scope': _scopes, 'immediate': true},
-                       startSession);   
     
     };
 
-    
   });
