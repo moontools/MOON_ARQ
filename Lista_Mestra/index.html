@@ -32,8 +32,8 @@
         <script src="../bower_components/angular-translate/angular-translate.min.js "></script>
         <script src="../bower_components/angular-dialog-service/dist/dialogs-default-translations.min.js" type="text/javascript"></script>
         <script src="../bower_components/angular-dialog-service/example/js/dialogs.min.js" type="text/javascript"></script>
-
-        
+        <script src="../bower_components/angular-locale-pt-br/angular-locale_pt-br.js" type="text/javascript"></script>
+ 
         <!--JS da aplicação-->
         <script src="js/app.js" type="text/javascript"></script>
         <script src="js/controllers.js" type="text/javascript"></script>
@@ -66,6 +66,7 @@
                 <small>Formulário para inserção de documentos da Lista Mestra!</small>
             </div>
             
+            <small class='required_notification'>* Campos obrigatórios</small>
             <!-- Inicio Inputs -->
             <form name="formListaMestra" novalidate ng-submit="salvar()" >
                                                            
@@ -88,7 +89,7 @@
                         <label class="control-label">Código documento </label>
                         <small class="help-block"></small>
                         <input type="text"
-                               name="codigoDocumento"
+                               name="codigo"
                                class="form-control" 
                                ng-model="registro.codigo"
                                ng-disabled="true">
@@ -221,9 +222,10 @@
                     <!-- Fim Detalhamento -->
                     
                     <!--Outro Detalhamento-->
-                    <div class="form-group" ng-show="registro.detalhamento == 'OUTRO'" ng-class="{ 'has-error' : formListaMestra.outroDetalhamento.$invalid && !formListaMestra.outroDetalhamento.$pristine}">
+                    <div class="form-group animated" ng-class="{'fadeIn' : registro.detalhamento == 'OUTRO'}" ng-show="registro.detalhamento == 'OUTRO'" ng-class="{ 'has-error' : formListaMestra.outroDetalhamento.$invalid && !formListaMestra.outroDetalhamento.$pristine}">
                         <label class="control-label">Descreva o detalhamento </label>
                         <input type="text"
+                               capitalize
                                name="outroDetalhamento"
                                class="form-control" 
                                ng-model="registro.outroDetalhamento"
@@ -402,13 +404,13 @@
                         <label class="control-label"></label>
                             <button type="submit" class="btn btn-primary" ng-disabled="formListaMestra.$invalid" >
                                 Salvar
-                            </button><!--
+                            </button>
                             <button type="button" class="btn btn-primary" ng-click="teste()" >
                                 Testar
                             </button>
                             <button type="button" class="btn btn-primary" ng-click="teste2()" >
                                 Testar 2
-                            </button>-->
+                            </button>
                         
                     </div>
                     <!-- Fim Botão Salvar -->

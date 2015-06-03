@@ -14,7 +14,7 @@
 
         /**
          * Seta o Id da planilha a ser manipulada pela API
-         * @param {type} spreadSheetId Id da planilha do Google
+         * @param {string} spreadSheetId Id da planilha do Google
          */
         googleSheet.setSpreadSheetId = function(spreadSheetId){
             _spreadSheetId = spreadSheetId;
@@ -24,7 +24,7 @@
 
         /**
          * Seta o nome da página a ser manipulada pela API
-         * @param {type} sheetName Nome página
+         * @param {string} sheetName Nome página
          */
         googleSheet.setSheetName = function(sheetName){
             _sheetName = sheetName;
@@ -54,8 +54,8 @@
          * Remove um registro da planilha
          * @param {string} type Tipo de busca a ser feita para encontrar o registro
          *                 EX: "linha","Código" ou pelo Cabelçaho de preferência
-         * @param {type} value Valor a ser procurado
-         * @param {type} callback Função a ser executada ao fim da requisição 
+         * @param {string} value Valor a ser procurado
+         * @param {function} callback Função a ser executada ao fim da requisição 
          */
         googleSheet.removeRecord = function(type,value,callback){
             var params = {
@@ -68,16 +68,16 @@
         /**
          * Atualiza um registro da planilha
          * @param {object} record Dados a serem atualizados
-         * @param {string} type Tipo de busca a ser feita para encontrar o registro
+         * @param {string} column Coluna a ser pesquisada para encontrar o registro
          *                 EX: "linha","Código" ou pelo Cabelçaho de preferência
-         * @param {type} value Valor a ser procurado
-         * @param {type} callback Função a ser executada ao fim da requisição
+         * @param {string} value Valor a ser procurado
+         * @param {function} callback Função a ser executada ao fim da requisição
          */
-        googleSheet.updateRecord = function(record, type, value, callback){
+        googleSheet.updateRecord = function(record, column, value, callback){
            var params = {
                metodo:"updateRecord",
                dados:record,
-               type:type,
+               type:column,
                value:value};
            googleSheet.request(params,callback); 
         };
@@ -85,25 +85,25 @@
 
         /**
          * Retorna um registro da planilha
-         * @param {string} type Tipo de busca a ser feita para encontrar o registro
-         *                 EX: "linha","Código" ou pelo Cabelçaho de preferência
-         * @param {type} value Valor a ser procurado
-         * @param {type} callback Função a ser executada ao fim da requisição
+         * @param {string} column Coluna a ser pesquisada
+         *                 EX: "linha","Código" ou pelo Cabeçalho de preferência
+         * @param {string} value Valor a ser procurado
+         * @param {function} callback Função a ser executada ao fim da requisição
          */
-        googleSheet.getRecord = function(type, value, callback){
+        googleSheet.getRecord = function(column, value, callback){
            var params = {
                metodo:"getRecord",
-               type:type,
+               type:column,
                value:value};
            googleSheet.request(params,callback);
         };
 
         /**
-         * Retorna um registro da planilha
+         * Retorna todos os registros da planilha
          * @param {string} returnType Tipo do retorno esperado
          *                 Ex: "arrayAssociative" -> Para obter o retorno no formato de um array associativo
          *                 Ex: "array" -> Para objer o retorno no formato de um array normal
-         * @param {type} callback Função a ser executada ao fim da requisição
+         * @param {function} callback Função a ser executada ao fim da requisição
          */
         googleSheet.getAllRecords = function(returnType, callback){
            var params ={
@@ -131,7 +131,7 @@
         /**
          * Executa requisoção para API do AppScript
          * @param {object} params Parâmetros que serão enviados para API
-         * @param {type} callback Funçã
+         * @param {function} callback Funçã
          */
         googleSheet.request = function(params,callback){
             $http({url:_urlApi,
