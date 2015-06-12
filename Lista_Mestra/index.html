@@ -33,6 +33,7 @@
         <script src="../bower_components/angular-dialog-service/dist/dialogs-default-translations.min.js" type="text/javascript"></script>
         <script src="../bower_components/angular-dialog-service/example/js/dialogs.min.js" type="text/javascript"></script>
         <script src="../bower_components/angular-locale-pt-br/angular-locale_pt-br.js" type="text/javascript"></script>
+        <script src="../bower_components/angular-input-masks/angular-input-masks-standalone.min.js" type="text/javascript"></script>
  
         <!--JS da aplicação-->
         <script src="js/app.js" type="text/javascript"></script>
@@ -107,32 +108,7 @@
                                ng-disabled="true">
                     </div> 
                     <!-- Fim código documento -->
-                    
-                    <!-- Data documento -->
-                    <div class="form-group">      
-                        <label class="control-label">Data documento </label>
-                        <small class="help-block"></small>
-                        <p class="input-group">
-                            <input type="text" 
-                                   class="form-control" 
-                                   datepicker-popup="dd/MM/yyyy"
-                                   value="{{registro.dataDocumento | date:dd/MM/yyyy}}"
-                                   ng-model="registro.dataDocumento"
-                                   show-weeks="false"
-                                   is-open="opened" 
-                                   current-text="Hoje"
-                                   clear-text="Limpar"
-                                   close-text="Fechar"
-                                   ng-required="true"
-                                   maxlength="10"
-                                   required/>
-                            <span class="input-group-btn">
-                                <button type="button" class="btn btn-default" ng-click="openCalendar($event)"><i class="glyphicon glyphicon-calendar"></i></button>
-                            </span>
-                        </p>
-                    </div> 
-                    <!-- Fim Data documento -->
-                    
+                                        
                     <!-- Cliente -->
                     <div class="form-group" ng-class="{ 'has-error' : formListaMestra.cliente.$invalid && !formListaMestra.cliente.$pristine}">      
                         <label class="control-label">Cliente </label>
@@ -155,24 +131,11 @@
                         <input type="text"
                                name="revisao"
                                class="form-control"
-                               ng-class="{'spinner' : !params.bloco}"
+                               ng-class="{'spinner' : !params.blocos}"
                                ng-model="registro.empreendimento"
                                ng-disabled="true">
                     </div> 
                     <!-- Fim Empreendimento -->  
-                    
-                    <!--Bloco-->
-                    <div class="form-group animated" ng-class="{'fadeIn' : params.bloco}" ng-show="params.bloco">
-                        <label class="control-label">Blocos</label>
-                        <div class="checkbox" ng-if="params.bloco !== '%loading%'" >
-                            <label ng-repeat="bloco in params.bloco" style="padding-right: 20px">
-                                <input type="checkbox" ng-model="registro.blocos[bloco[0]]"/>
-                                {{bloco[0]}}
-                            </label>
-                        </div>
-                        <small></small>
-                    </div>
-                    <!--FIM Bloco-->
                     
                     <!-- Projeto -->
                     <div class="form-group" ng-class="{ 'has-error' : formListaMestra.projeto.$invalid && !formListaMestra.projeto.$pristine}">      
@@ -189,7 +152,7 @@
                         </select>
                     </div> 
                     <!-- Fim Projeto -->
-
+                    
                     <!-- Complemento -->
                     <div class="form-group animated" ng-class="{'fadeIn' : params.complemento.length > 0}" ng-show="params.complemento.length > 0" ng-class="{ 'has-error' : formListaMestra.complemento.$invalid && !formListaMestra.complemento.$pristine}">      
                         <label class="control-label">Complemento </label>
@@ -233,75 +196,6 @@
                     </div>
                     <!--FIM Outro Detalhamento-->
                     
-                    <!-- Responsável Técnico -->
-                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.responsavelTecnico.$invalid && !formListaMestra.responsavelTecnico.$pristine}">   
-                        <label class="control-label">Responsável técnico </label>
-                        <small class="help-block" ng-show="formListaMestra.responsavelTecnico.$invalid && !formListaMestra.responsavelTecnico.$pristine">Selecione o responsável tecnico</small>
-                        <select name="responsavelTecnico"
-                                ng-options="responsavelTecnico[0] as responsavelTecnico[0] for responsavelTecnico in params.responsavelTecnico"
-                                class="form-control"
-                                ng-class="{'spinner' : !params.responsavelTecnico}"
-                                ng-model="registro.responsavelTecnico" 
-                                required>
-                            <option></option>
-                        </select>
-                    </div> 
-                    <!-- Fim Responsável Ténico -->
-
-                    <!-- Arquivo Editavel -->
-                    <div class="form-group">      
-                        <label class=" control-label">Arquivo editável </label>
-                        <small></small>
-                        <input type="file"
-                               name="arquivoEditavel"
-                               class="form-control" 
-                               fileread="registro.arquivoEditavel"
-                               ng-model="registro.arquivoEditavel"
-                               ng-required="registro.arquivoEditavel || registro.arquivoImpressao"/>
-                        </div>
-                    <!-- Fim Arquivo Editavel -->
-                    
-                    
-                    <!-- Arquivo Impressão -->
-                    <div class="form-group">      
-                        <label class="control-label">Arquivo impressão </label>
-                        <small></small>
-                        <input type="file"
-                               name="arquivoImpressao"
-                               class="form-control" 
-                               fileread="registro.arquivoImpressao"
-                               ng-model="registro.arquivoImpressao"
-                               ng-required="registro.arquivoEditavel || registro.arquivoImpressao"/>
-                    </div>
-                    <!-- Fim Arquivo Impressão -->
-
-                    <!-- Arquivo PDF -->
-                    <div class="form-group">      
-                        <label class=" control-label">Arquivo PDF </label>
-                        <small></small>
-                        <input type="file"
-                               name="arquivoPdf"
-                               class="form-control"
-                               fileread="registro.arquivoPdf"
-                               ng-model="registro.arquivoPdf"
-                               required/>
-                            
-                    </div>
-                    <!-- Fim Arquivo PDF -->
-
-                    <!-- Descrição Arquivo -->
-                    <div class="form-group">      
-                        <label class="control-label">Descrição arquivo </label>
-                        <small></small>
-                        <input type="text" 
-                               placeholder="Insira a descrição o arquivo"
-                               class="form-control" 
-                               ng-model="registro.descricaoArquivo"
-                               capitalize
-                               required>
-                    </div> 
-                    <!-- Fim Descrição Arquivo -->
-
                     <!-- Número Grupo Prancha -->
                     <div class="form-group">      
                         <label class="control-label">Nº grupo prancha </label>
@@ -311,10 +205,23 @@
                                class="form-control" 
                                ng-model="registro.nGrupoPranchas"
                                capitalize
-                               ng-required="registro.nGrupoPranchas">
+                               ng-required="registro.nGrupoPranchas || registro.numeroPrancha">
                     </div> 
                     <!-- Fim Número Grupo PranchaS -->
-
+                    
+                    <!--Bloco-->
+                    <div class="form-group animated" ng-class="{'fadeIn' : params.bloco}" ng-show="params.blocos">
+                        <label class="control-label">Blocos</label>
+                        <div class="checkbox" ng-if="params.blocos !== '%loading%'" >
+                            <label ng-repeat="bloco in params.blocos" style="padding-right: 20px">
+                                <input type="checkbox" ng-model="registro.blocos[bloco]"/>
+                                {{bloco}}
+                            </label>
+                        </div>
+                        <small></small>
+                    </div>
+                    <!--FIM Bloco-->
+                    
                     <!-- Número Prancha -->
                     <div class="form-group" ng-class="{ 'has-error' : formListaMestra.numeroPrancha.$invalid && !formListaMestra.numeroPrancha.$pristine}"> 
                         <label class=" control-label">Número prancha </label>
@@ -327,7 +234,47 @@
                                ng-required="registro.nGrupoPranchas">
                     </div> 
                     <!-- Fim Número Prancha -->
-
+                                                          
+                    <!-- Responsável Técnico -->
+                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.responsavelTecnico.$invalid && !formListaMestra.responsavelTecnico.$pristine}">   
+                        <label class="control-label">Responsável técnico </label>
+                        <small class="help-block" ng-show="formListaMestra.responsavelTecnico.$invalid && !formListaMestra.responsavelTecnico.$pristine">Selecione o responsável tecnico</small>
+                        <select name="responsavelTecnico"
+                                ng-options="responsavelTecnico as responsavelTecnico for responsavelTecnico in params.responsavelTecnico"
+                                class="form-control"
+                                ng-class="{'spinner' : !params.responsavelTecnico}"
+                                ng-model="registro.responsavelTecnico" 
+                                required>
+                            <option></option>
+                        </select>
+                    </div> 
+                    <!-- Fim Responsável Ténico -->
+                    
+                    <!-- Data documento -->
+                    <div class="form-group">      
+                        <label class="control-label">Data documento </label>
+                        <small class="help-block"></small>
+                        <p class="input-group">
+                            <input type="text" 
+                                   class="form-control" 
+                                   datepicker-popup="dd/MM/yyyy"
+                                   value="{{registro.dataDocumento | date:dd/MM/yyyy}}"
+                                   ng-model="registro.dataDocumento"
+                                   show-weeks="false"
+                                   is-open="opened" 
+                                   current-text="Hoje"
+                                   clear-text="Limpar"
+                                   close-text="Fechar"
+                                   ng-required="true"
+                                   maxlength="10"
+                                   required/>
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" ng-click="openCalendar($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+                            </span>
+                        </p>
+                    </div> 
+                    <!-- Fim Data documento -->
+                    
                     <!-- Radio Servidor Terra -->
                     <div class="form-group">
                         <label class=" control-label">Servidor terra</label>
@@ -372,19 +319,103 @@
                                 </toggle-switch>
                             </div>
                     </div>
-                    <!-- Fim Pasta Física Cliente -->
+                    <!-- Fim Pasta Física Cliente -->                  
+                    
+                    <!-- Arquivo Editavel -->
+                    <div class="form-group">      
+                        <label class=" control-label">Arquivo editável </label>
+                        </br>
+                        <small class="help-block" ng-show="registro.codigo && params.arquivoEditavel">                        
+                            <a href="{{params.arquivoEditavel}}" target="_blank">{{registro.nomeDocumento}}</a>
+                            -> Link do atual documento.
+                        </small>
+                        <input type="file"
+                               name="arquivoEditavel"
+                               ng-change="changeFile()"
+                               class="form-control" 
+                               fileread="registro.arquivoEditavel"
+                               ng-model="registro.arquivoEditavel"
+                               ng-required="(!registro.codigo && registro.nGrupoPranchas) || registro.arquivoEditavel || registro.arquivoImpressao"/>
+                    </div>
+                    <!-- Fim Arquivo Editavel -->
+                    
+                    
+                    <!-- Arquivo Impressão -->
+                    <div class="form-group">      
+                        <label class="control-label">Arquivo impressão </label>
+                        <small class="help-block" ng-show="registro.codigo && params.arquivoImpressao">                        
+                            <a href="{{params.arquivoImpressao}}" target="_blank">{{registro.nomeDocumento}}</a>
+                            -> Link do atual documento.
+                        </small>
+                        <input type="file"
+                               name="arquivoImpressao"
+                               class="form-control" 
+                               fileread="registro.arquivoImpressao"
+                               ng-model="registro.arquivoImpressao"
+                               ng-required="registro.arquivoEditavel || registro.arquivoImpressao"/>
+                    </div>
+                    <!-- Fim Arquivo Impressão -->
 
+                    <!-- Arquivo PDF -->
+                    <div class="form-group">      
+                        <label class=" control-label">Arquivo PDF </label>
+                        <small class="help-block" ng-show="registro.codigo && params.arquivoPdf">                        
+                            <a href="{{params.arquivoPdf}}" target="_blank">{{registro.nomeDocumento}}</a>
+                            -> Link do atual documento.
+                        </small>
+                        <input type="file"
+                               name="arquivoPdf"
+                               class="form-control"
+                               fileread="registro.arquivoPdf"
+                               ng-model="registro.arquivoPdf"
+                               ng-required="!registro.codigo || registro.arquivoEditavel || registro.arquivoPdf"/>
+                    </div>
+                    <!-- Fim Arquivo PDF -->
+                    
+                    <!-- Valor pagamento -->
+                    <div class="form-group"> 
+                        <label class=" control-label">Valor pagamento </label>
+                        <small class="help-block" ></small>
+                        <input type="text"
+                               placeholder="R$ 0,00"
+                               ui-money-mask
+                               name="valorPagamento"
+                               class="form-control" 
+                               ng-model="registro.valorPagamento"
+                               ng-required="registro.valorPagamento">
+                    </div> 
+                    <!-- Fim Valor pagamento -->
+                    
+                    
+                    <!-- Comprovante pagamento -->
+                    <div class="form-group">      
+                        <label class=" control-label">Comprovante pagamento </label>
+                        <small class="help-block" ng-show="registro.codigo && params.comprovantePagamento">                        
+                            <a href="{{params.comprovantePagamento}}" target="_blank">{{registro.nomeDocumento}}</a>
+                            -> Link do atual documento.
+                        </small>
+                        <input type="file"
+                               name="comprovantePagamento"
+                               class="form-control"
+                               fileread="registro.comprovantePagamento"
+                               ng-model="registro.comprovantePagamento"
+                               ng-required="!registro.codigo && registro.valorPagamento"/>
+                    </div>
+                    <!-- Comprovante pagamento -->
+                    
+                    
                     <!-- Observações -->
                     <div class="form-group">      
                         <label class="control-label">Observações</label>
                             <textarea class="form-control"
                                       capitalize
                                       ng-model="registro.observacoes"
-                                      ng-required="registro.observacoes">
+                                      ng-required="registro.codigo || registro.observacoes"
+                                      placeholder="{{registro.codigo ? 'Descreva as modificações desta nova revisão' : ''}}">
                             </textarea>
                     </div> 
-                    <!-- Fim Observações  -->
-
+                    <!-- Fim Observações-->
+                    
                     <!-- Notificar Cliente -->
                     <div class="form-group">
                         <label class="control-label">Notificar cliente</label>
@@ -398,19 +429,21 @@
                             </toggle-switch>
                         </div>
                     </div>
-                    <!-- Fim Notificar Cliente -->
+                    <!-- Fim Notificar Cliente -->                 
+                    
+                    
                     <!-- Botão Salvar -->
                     <div class="form-group">
                         <label class="control-label"></label>
                             <button type="submit" class="btn btn-primary" ng-disabled="formListaMestra.$invalid" >
                                 Salvar
                             </button>
-<!--                            <button type="button" class="btn btn-primary" ng-click="teste()" >
+                            <button type="button" class="btn btn-primary" ng-click="teste()" >
                                 Testar
                             </button>
                             <button type="button" class="btn btn-primary" ng-click="teste2()" >
                                 Testar 2
-                            </button>-->
+                            </button>
                         
                     </div>
                     <!-- Fim Botão Salvar -->

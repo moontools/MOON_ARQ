@@ -1,3 +1,30 @@
+/**
+ * Módulo Google Drive
+ * 
+ * Criado para ser utilizado com o framework AngularJs,
+ * Possibilita a manipulação de arquivos e pastas do Google Drive através do DRIVE API
+ * 
+ * Métodos disponíveis:
+ * 
+ * setClientId -> Seta o id do cliente
+ * setScopes -> Seta o scopo da API
+ * checkAuth -> Checa se o usuário autorizou a execução da API
+ * insertFile -> Possibilita o upload de um arquivo no drive
+ * insertPermission -> Permite definir permissões em um arquivo ou pasta
+ * getInfoFile -> Permite objet informações de um arquivo ou pasta
+ * listChildrenInFolder -> Permite listar os filhos de uma pasta
+ * createFolder -> Permite criar uma pasta
+ * 
+ * Considerações:
+ * -> Cada método possui a sua documenteção detalhada
+ * -> A api é executada com usuário sistema@moontools.com.br
+ * 
+ * Desenvolvedor: deividi@moontools.com.br (10/05/2015)
+ * Moontools Sistemas 
+ * Version: 1.00
+ * Last update: 03/06/2015
+ */
+
 (function(){
     angular.module('mtl.gdrive',[])    
     .factory('mtlGdrive',function(){
@@ -28,10 +55,10 @@
                 console.log("verificando Autenticação");
                 gapi.auth.authorize(
                    {'client_id': _clientId, 'scope': _scopes, 'immediate': true},
-                   handleAuthResult);
+                   _handleAuthResult);
             }else{
                 // Caso negativo entra em looping aguardando o carregamento
-                handleClientLoad();
+                _handleClientLoad();
             }
         }; 
 
@@ -39,7 +66,7 @@
         /**
         * Função chamada enquando a API do Google esta sendo carregada
         */
-        var handleClientLoad = function () {
+        var _handleClientLoad = function () {
             console.log("Carregando Drive API...");
             window.setTimeout(driveApi.checkAuth, 1);			
         };
@@ -48,7 +75,7 @@
         /**
          * Função executada assim que é verificação de autorização do usuário é executada
          */
-        var handleAuthResult = function(authResult){
+        var _handleAuthResult = function(authResult){
             // Verifcica se o usuário autorizou a aplicação
             if (authResult && !authResult.error) {
                 console.log("Autenticado com sucesso!");
@@ -57,7 +84,7 @@
                 // Caso negativo exibe tela de autenticação
                 gapi.auth.authorize(
                       {'client_id': _clientId, 'scope': _scopes, 'immediate': false},
-                      handleAuthResult);
+                      _handleAuthResult);
             }
         };
 
@@ -115,7 +142,7 @@
                   base64Data +
                   close_delim;
    
-              var request = gapi.client.request({
+              var params = {
                   'path': '/upload/drive/v2/files',
                   'method': 'POST',
                   'params': {'uploadType': 'multipart'},
@@ -123,13 +150,8 @@
                     'Content-Type': 'multipart/mixed; boundary="' + boundary + '"'
                    },
                   'body': multipartRequestBody
-              });
-              if (!callback) {
-                callback = function(file) {
-                  console.log(file)
-                };
-              }
-              request.execute(callback);
+              };
+              _request(params,callback);
             };
         };
 
@@ -144,22 +166,16 @@
          **/
         driveApi.insertPermission = function(fileId, role, type, value, callback){
 
-            var request = gapi.client.request({
+            var params = {
                 'path': 'drive/v2/files/'+fileId+'/permissions',
                 'method': 'POST',
                 'body': {
                     'value': value,
                     'type': type,
                     'role': role }
-            });
+            };
 
-            if (!callback) {
-                callback = function(file) {
-                  console.log(file);
-                };
-            }
-
-            request.execute(callback);
+            _request(params,callback);
         };
 
         /**
@@ -175,7 +191,7 @@
                 'body': {
                 'fileId': fileId}
             };
-            request(params,callback);
+            _request(params,callback);
         };
 
 
@@ -191,7 +207,7 @@
                 'body': {
                 'fileId': folderId}
             };
-            request(params,callback); 
+            _request(params,callback); 
         };
 
         /**
@@ -220,17 +236,42 @@
                 'method': 'POST',
                 'body':body
             };
-            request(params,callback);
+            _request(params,callback);
         };
-
-        driveApi.checkAuth()
+        
+        /*
+         * Adiciona um arquivo existente a uma pasta no drive
+         * @param {type} folderId Id da pasta
+         * @param {type} fileId Id do arquivo
+         * @param {Function} callback Função a ser executada ao final da requisição.
+         */
+        driveApi.addFileIntoFolder = function(folderId, fileId, callback) {
+            var params = {
+                'path':'drive/v2/files/'+folderId+'/children',
+                'method':'POST',
+                'body': {
+                'id': fileId}
+            };
+            _request(params,callback); 
+        };
+        
+        
+        driveApi.removeFileFromFolder = function(folderId, fileId, callback) {
+            var params = {
+                'path':'drive/v2/files/'+folderId+'/children/'+fileId,
+                'method':'DELETE'
+            };
+            _request(params,callback);             
+        };
+        
+        
         /**
          * Faz requisição pra a API do Drive
          * @param {type} params parâmetros da requisição
          * @param {Function} callback Função a ser executada ao final da requisição.
          * @returns {services_L1.request}
          */
-        var request = function(params,callback){
+        var _request = function(params,callback){
             var request = gapi.client.request(params);
 
             if (!callback) {
@@ -242,7 +283,7 @@
             request.execute(callback);  
         };
 
-
+        driveApi.checkAuth();
         return driveApi;
     
     });

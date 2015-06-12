@@ -1,7 +1,7 @@
 /* 
  * Inicialização do App
  */
-var app = angular.module('listaMestra', ['ui.bootstrap','toggle-switch','dialogs.main','pascalprecht.translate','dialogs.default-translations','mtl.gdrive','mtl.googleSheet','mtl.Acessos','mtl.util']);
+var app = angular.module('listaMestra', ['ui.bootstrap','ui.utils.masks','toggle-switch','dialogs.main','pascalprecht.translate','dialogs.default-translations','mtl.gdrive','mtl.googleSheet','mtl.Acessos','mtl.util']);
 
 /**
  * Configurações dos modais de dialogos 
@@ -36,5 +36,18 @@ app.config(['dialogsProvider','$translateProvider',function(dialogsProvider,$tra
     // Define a linguagem padrão para pt-br
     $translateProvider.preferredLanguage('pt-br');    
 }]);
+
+app.constant('config',{
+    idSheetConfig : '1dfZqj7IIEmYFMioF2_xm_dvhjKAsScHE3PeQgos6Uj8',
+    sheetConfigEmp : 'Configurações Empreendimentos',
+    sheetParamsForm : 'Parâmetros Formulário',
+    sheetParamsFiles : 'Níveis Gestão',
+    googleDriveClienteId : '597261259365-0n3ee1mmra5lveal5a014233f4murqef.apps.googleusercontent.com',
+    googleDriveScope : 'https://www.googleapis.com/auth/drive'
+});
+
+
+
+
 
 

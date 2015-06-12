@@ -166,6 +166,62 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
     };
     
     /*
+     * Move um arquivo
+     * @param {string} folderOrigemId Id da pasta de origem
+     * @param {type} fileId Id ddo arquivo a ser movido
+     * @param {type} FolderDestinoId Id da pasta destino
+     * @param {function} callback Função a ser executada ao fim da requisição
+     * @returns {function} callback executa função de callback
+     */
+    var moveFile = function(arrayFilesLink,FolderDestinoId,callback){
+        if(arrayFilesLink.length > 0){
+            var idFile = arrayFilesLink[0].split("file/d/")[1];
+                idFile = idFile.split("/edit")[0];
+            console.log("Obtendo informação do arquivo "+arrayFilesLink[0]);
+            mtlGdrive.getInfoFile(idFile,function(result){
+                var id = result.id,
+                    fileInf = result;
+                console.log(result);
+                console.log("Adicionando o arquivo cujo id é "+id+" na pasta cujo id é "+FolderDestinoId);
+                mtlGdrive.addFileIntoFolder(FolderDestinoId, id,function(result){
+                    if(result.error){
+                        callback(false,result,result.error);
+                    }else{
+                        if(fileInf.parents.length > 0){
+                            console.log("Removendo o arquivo cujo id é "+id+" da pasta cujo id e é "+fileInf.parents[0].id);
+                            mtlGdrive.removeFileFromFolder(fileInf.parents[0].id,id,function(result){
+                                if(result){
+                                    if(result.error){
+                                        callback(false,result,result.error);
+                                    }
+                                }else{
+                                    arrayFilesLink.shift();
+                                    moveFile(arrayFilesLink,FolderDestinoId,callback);
+                                }
+                            });
+                        }else{
+                            console.log(arrayFilesLink);
+                            arrayFilesLink.shift();
+                            moveFile(arrayFilesLink,FolderDestinoId,callback);
+                        }
+                    }
+                }); 
+            });
+        }else{
+            callback(true,null,"Backup efetuado com sucesso!");
+        }   
+    };
+    
+    
+    this.makeBackupFiles = function(arrayFilesLink,idFolderBackup,callback){
+        console.log("Iniciando backup dos aquivos");
+        moveFile(arrayFilesLink,idFolderBackup,function(status,data,message){
+           callback(status,data,message); 
+        });
+    };
+    
+    
+    /*
      * Inicia o processo de upload do arquivo
      * @params {callback} Função a ser executada ao final da execução do processo de upload.
      */

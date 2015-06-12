@@ -1,5 +1,9 @@
 (function(){
     angular.module('mtl.util',[])
+    
+    /*
+     * Serviço com funções utilitárias
+     */
     .service('util',function(){
         
         /**
@@ -17,7 +21,7 @@
         * @return {string} Normalized header.
         */
         this.normalizeHeaders = function(header, removeAlum){
-            header = removeAcentos(header);
+            header = _removeAcentos(header);
             var key = "";
             var upperCase = false;
             for (var i = 0; i < header.length; ++i) {
@@ -27,7 +31,7 @@
                 continue;
               }
               if (removeAlum){
-                if (!isAlnum(letter)) {
+                if (!_isAlnum(letter)) {
                   continue;
                 }
               }
@@ -49,7 +53,7 @@
         * @return {boolean} True if the character char is alphanumeric, false otherwise.
         * @private
         */
-        isAlnum = function(char) {
+        var _isAlnum = function(char) {
             return char >= 'A' && char <= 'Z' || char >= 'a' && char <= 'z' || isDigit(char);
         };
         
@@ -59,7 +63,7 @@
         * @return {string} Retorna a palavra sem acento
         * @private
         */
-        removeAcentos = function(palavra) {
+        var _removeAcentos = function(palavra) {
             var com_acento = 'áàãâäéèêëíìîïóòõôöúùûüçÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÖÔÚÙÛÜÇ',
                 sem_acento = 'aaaaaeeeeiiiiooooouuuucAAAAAEEEEIIIIOOOOOUUUUC',
                 nova = '';
@@ -130,9 +134,9 @@
       };
    })
    
-//   /**
-//    * Diretira para obter o arquivo dos inputs type file
-//    */
+    /**
+    * Diretiva para obter o arquivo dos inputs type file
+    */
     .directive("fileread", [function () {
         return {
             restrict:"A",
