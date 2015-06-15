@@ -28,6 +28,12 @@
 (function(){
     angular.module('mtl.gdrive',[])    
     .factory('mtlGdrive',function(){
+        
+        log = function(msg){
+            if(localStorage.development === "true"){
+                console.log(msg);
+            }
+        };
 
         // Variáveis locais
         var _clientId = '';
@@ -51,8 +57,8 @@
             // Verifica se a API do Google foi carregada
             if (typeof gapi.auth !== 'undefined') {
                 // Caso positivo verifica a autorização do usuário
-                console.log('Drive API Carregada...');
-                console.log("verificando Autenticação");
+                log('Drive API Carregada...');
+                log("verificando Autenticação");
                 gapi.auth.authorize(
                    {'client_id': _clientId, 'scope': _scopes, 'immediate': true},
                    _handleAuthResult);
@@ -67,7 +73,7 @@
         * Função chamada enquando a API do Google esta sendo carregada
         */
         var _handleClientLoad = function () {
-            console.log("Carregando Drive API...");
+            log("Carregando Drive API...");
             window.setTimeout(driveApi.checkAuth, 1);			
         };
 
@@ -78,7 +84,7 @@
         var _handleAuthResult = function(authResult){
             // Verifcica se o usuário autorizou a aplicação
             if (authResult && !authResult.error) {
-                console.log("Autenticado com sucesso!");
+                log("Autenticado com sucesso!");
             }else{
                 
                 // Caso negativo exibe tela de autenticação
@@ -276,7 +282,7 @@
 
             if (!callback) {
                 callback = function(file) {
-                  console.log(file);
+                  log(file);
                 };
             }
 

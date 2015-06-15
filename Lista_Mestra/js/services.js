@@ -1,3 +1,8 @@
+/* Serviços responsável pela manipulação dos arquivos da Lista Mestra
+ * 
+ * @param {object} mtlGdrive Objeto para manipulação de arquivos do Google Drive
+ * @param {type} $timeout Objeto para manipula delays de execução
+ */
 app.service('lmFiles',function(mtlGdrive,$timeout){
     
     var idFolderRaiz = null; // Id da pasta raiz
@@ -85,17 +90,17 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
                 if(result.error)
                     return error(result.error.message);
                 if(result.mimeType === 'application/vnd.google-apps.folder' && result.title === patchFolder[0]){
-                    console.log("Achei a pasta "+result.title);
+                    log("Achei a pasta "+result.title);
                     patchFolder.shift();
                     descobreFilhos(result.id,patchFolder);
                 }else{
-                    console.log("Estou procurando");
+                    log("Estou procurando");
                     itens.shift();
                     conhecerFilhos(idFolder,itens,patchFolder);
                 }
             });
         }else{
-            console.log("Terminei a procura de "+patchFolder[0]+" e não achei");
+            log("Terminei a procura de "+patchFolder[0]+" e não achei");
             criarPasta(patchFolder,idFolder);
         }
     };
@@ -108,13 +113,13 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
      */
     var criarPasta = function(patchFolder, idParent){
         if(patchFolder.length > 0){
-            console.log("Vou criar a pasta "+patchFolder[0]+" na pasta cujo id é "+idParent);
-                mtlGdrive.createFolder(patchFolder[0],[idParent],function(result){
-                    if(result.error)
-                        return error(result.error.message);
-                    console.log("Criei a pasta "+patchFolder[0]+" cujo id é "+result.id);
-                    patchFolder.shift();
-                    criarPasta(patchFolder,result.id);
+            log("Vou criar a pasta "+patchFolder[0]+" na pasta cujo id é "+idParent);
+            mtlGdrive.createFolder(patchFolder[0],[idParent],function(result){
+                if(result.error)
+                    return error(result.error.message);
+                log("Criei a pasta "+patchFolder[0]+" cujo id é "+result.id);
+                patchFolder.shift();
+                criarPasta(patchFolder,result.id);
             });
         }else{
             saveFile([idParent]);
@@ -152,13 +157,13 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
      * @params {array} parents Array com os ids das pastas onde o arquivo deverá ser inserido;
      */
     var saveFile = function(parents){
-        console.log("Vou inserir o arquivo "+fileData);
+        log("Vou inserir o arquivo "+fileData);
         if(!fileData)
             return error("Tentativa de upload de arquivo inválido.");
         mtlGdrive.insertFile(fileData,titleFile,parents,function(result){
             if(result.error)
                 return error(result.error.message);
-            console.log("Inseri o arquivo");
+            log("Inseri o arquivo");
             linkArquivo = result.alternateLink;
             status = true;
             processing = false;
@@ -177,18 +182,17 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
         if(arrayFilesLink.length > 0){
             var idFile = arrayFilesLink[0].split("file/d/")[1];
                 idFile = idFile.split("/edit")[0];
-            console.log("Obtendo informação do arquivo "+arrayFilesLink[0]);
+            log("Obtendo informação do arquivo "+arrayFilesLink[0]);
             mtlGdrive.getInfoFile(idFile,function(result){
                 var id = result.id,
                     fileInf = result;
-                console.log(result);
-                console.log("Adicionando o arquivo cujo id é "+id+" na pasta cujo id é "+FolderDestinoId);
+                log("Adicionando o arquivo cujo id é "+id+" na pasta cujo id é "+FolderDestinoId);
                 mtlGdrive.addFileIntoFolder(FolderDestinoId, id,function(result){
                     if(result.error){
                         callback(false,result,result.error);
                     }else{
                         if(fileInf.parents.length > 0){
-                            console.log("Removendo o arquivo cujo id é "+id+" da pasta cujo id e é "+fileInf.parents[0].id);
+                            log("Removendo o arquivo cujo id é "+id+" da pasta cujo id e é "+fileInf.parents[0].id);
                             mtlGdrive.removeFileFromFolder(fileInf.parents[0].id,id,function(result){
                                 if(result){
                                     if(result.error){
@@ -200,7 +204,7 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
                                 }
                             });
                         }else{
-                            console.log(arrayFilesLink);
+                            log(arrayFilesLink);
                             arrayFilesLink.shift();
                             moveFile(arrayFilesLink,FolderDestinoId,callback);
                         }
@@ -214,7 +218,7 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
     
     
     this.makeBackupFiles = function(arrayFilesLink,idFolderBackup,callback){
-        console.log("Iniciando backup dos aquivos");
+        log("Iniciando backup dos aquivos");
         moveFile(arrayFilesLink,idFolderBackup,function(status,data,message){
            callback(status,data,message); 
         });

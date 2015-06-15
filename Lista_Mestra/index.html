@@ -18,10 +18,12 @@
         <!--<link rel="stylesheet" media="screen" href="css/bootstrap.css" />-->
         <link href="../bower_components/bootstrap/dist/css/bootstrap.css"  rel="stylesheet" media="screen"/>
         
+        <link rel="shortcut icon" type="image/png" href="images/gif_moontools_reducido.gif"/>
+
         <!--JS Ui Boostrat-->
         <script src="../bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js" type="text/javascript"></script> 
         
-         <!--Angular Toggle--> 
+
         <!--<link rel="stylesheet" media="screen" href="lib/angular-toggle-switch.css"/>-->
         <link rel="stylesheet" media="screen" href="../bower_components/angular-bootstrap-toggle-switch/style/bootstrap3/angular-toggle-switch-bootstrap-3.css"/>
         <script src="../bower_components/angular-bootstrap-toggle-switch/angular-toggle-switch.js" type="text/javascript"></script>
@@ -109,27 +111,24 @@
                     </div> 
                     <!-- Fim código documento -->
                                         
-                    <!-- Cliente -->
-                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.cliente.$invalid && !formListaMestra.cliente.$pristine}">      
+                    <!-- Cliente  -->
+                    <div class="form-group">      
                         <label class="control-label">Cliente </label>
-                        <small class="help-block" ng-show="formListaMestra.cliente.$invalid && !formListaMestra.cliente.$pristine">Selecione um cliente</small>
-                        <select ng-options="cliente[0] as cliente[0] for cliente in params.cliente"
-                                name="cliente"
-                                class="form-control"
-                                ng-class="{'spinner' : !params.cliente}"
-                                ng-model="registro.cliente" 
-                                required>
-                            <option></option>
-                        </select>
+                        <small class="help-block"></small>
+                        <input type="text"
+                               name="cliente"
+                               class="form-control"
+                               ng-model="registro.cliente"
+                               ng-disabled="true">
                     </div> 
-                    <!-- Fim Cliente -->
+                    <!-- Fim Cliente --
                     
                     <!-- Empreendimento  -->
                     <div class="form-group">      
                         <label class="control-label">Empreendimento </label>
                         <small class="help-block"></small>
                         <input type="text"
-                               name="revisao"
+                               name="empreendimento"
                                class="form-control"
                                ng-class="{'spinner' : !params.blocos}"
                                ng-model="registro.empreendimento"
@@ -382,7 +381,7 @@
                                name="valorPagamento"
                                class="form-control" 
                                ng-model="registro.valorPagamento"
-                               ng-required="registro.valorPagamento">
+                               ng-required="registro.valorPagamento || registro.comprovantePagamento" >
                     </div> 
                     <!-- Fim Valor pagamento -->
                     
@@ -390,7 +389,7 @@
                     <!-- Comprovante pagamento -->
                     <div class="form-group">      
                         <label class=" control-label">Comprovante pagamento </label>
-                        <small class="help-block" ng-show="registro.codigo && params.comprovantePagamento">                        
+                        <small class="help-block" ng-show="registro.codigo && params.comprovantePagamento">
                             <a href="{{params.comprovantePagamento}}" target="_blank">{{registro.nomeDocumento}}</a>
                             -> Link do atual documento.
                         </small>
@@ -438,12 +437,12 @@
                             <button type="submit" class="btn btn-primary" ng-disabled="formListaMestra.$invalid" >
                                 Salvar
                             </button>
-                            <button type="button" class="btn btn-primary" ng-click="teste()" >
+<!--                            <button type="button" class="btn btn-primary" ng-click="teste()" >
                                 Testar
                             </button>
                             <button type="button" class="btn btn-primary" ng-click="teste2()" >
                                 Testar 2
-                            </button>
+                            </button>-->
                         
                     </div>
                     <!-- Fim Botão Salvar -->

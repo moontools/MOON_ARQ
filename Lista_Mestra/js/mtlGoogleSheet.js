@@ -44,7 +44,7 @@
      */
     .factory('googleSheet',function($http,configGoogleSheet){
         
-        var _urlBaseApi = localStorage.development == "true"? configGoogleSheet.urlDevApi : configGoogleSheet.urlExecApi,
+        var _urlBaseApi = localStorage.development === "true"? configGoogleSheet.urlDevApi : configGoogleSheet.urlExecApi,
             _urlApi = '',
             _spreadSheetId = '',
             _sheetName ='';

@@ -1,15 +1,26 @@
-/**
- * Controller do formulário Lista Mestra
- * @param {object} $scope Scope do Controller
- * @param {object} mtlGdrive Objeto para comunicação com API do Google Drive
+/*
+ * Controller do formulário Lista Mestra.
+ * 
+ * @param {object} $rootScope Escopo Raiz da aplicação
+ * @param {object} $scope Escopo do controles do controller 
+ * @param {object} $filter Objeto para trabalhar com filtros 
+ * @param {object} $timeout Objeto para manipula delays de execução
+ * @param {object} mtlGdrive Objeto para manipulação de arquivos do Google Drive
+ * @param {object} googleSheet Objeto para manipulação de dados de uma planilha do google
+ * @param {object} dialogs Objeto para exibição de mensagens de dialogo
+ * @param {object} lmFiles objeto responsáveis por manipular os arquivos do formulário
+ * @param {object} util Objeto com funções utilitárias
+ * @param {object} acessos Permite a validação do acesso dos usuários
+ * @param {object} config Variáries globais de configuração da aplicação
+ * @param {object} configAcessos variáveis globais de configuração da API Acessos
  */
-app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeout,mtlGdrive,googleSheet,$timeout,$translate,dialogs,lmFiles,util,acessos,configAcessos,config){
+app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtlGdrive,googleSheet,dialogs,lmFiles,util,acessos,configAcessos,config){
              
-    // Inicializao o objetos utilizados pelo formulário
+    // Inicializa os objetos utilizados pelo formulário
     $scope.registro = new Object();
     $scope.params = new Object();
     $scope.buttons = new Object();
-    
+        
     $scope.registro.empreendimento = util.QueryString.empreendimento;
     $scope.registro.codigo = util.QueryString.codigo;
     $scope.edicao = $scope.registro.codigo ? true : false;
@@ -25,20 +36,21 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
     $scope.spinerloading = true;
     
     // Seta parâmetros utilizados pela API do Apps Script
-    googleSheet.setSpreadSheetId('1dfZqj7IIEmYFMioF2_xm_dvhjKAsScHE3PeQgos6Uj8');
+    googleSheet.setSpreadSheetId(config.idSheetConfig);
     
     // Carrega as configurações dos empreendimentos
-    googleSheet.setSheetName('Configurações Empreendimentos');
-    googleSheet.getColumnData(['empreendimento','idPlanilha','idPastaRaiz','idPastaBackup','emailGrupo','nomePagina'],'associativeArray',function(data, status, message){
+    googleSheet.setSheetName(config.sheetConfigEmp);
+    googleSheet.getColumnData(['cliente','empreendimento','idPlanilha','idPastaRaiz','idPastaBackup','emailGrupo','nomePagina'],'associativeArray',function(data, status, message){
         $scope.params.configEmpreendimentos = status ? data : showError(message);
         for(var i in data){
             if($scope.registro.empreendimento === $scope.params.configEmpreendimentos[i].empreendimento){
                 angular.forEach(data[i],function(val, key){
-                   $scope.params[key] = val; 
+                   $scope.params[key] = val;
                 });
                 break;
             }
         }
+        $scope.registro.cliente = $scope.params.cliente;
         if(!$scope.params.emailGrupo){
             $scope.spinerloading = false;
             return showError("Empreendimento inválido!");
@@ -78,22 +90,18 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
     };
       
     /**
-     * Inicializa o carregamento dos parâmetros necessário para o funcionamento do formulário 
+     * Inicializa o carregamento dos parâmetros necessários para o funcionamento do formulário 
      * ************************************************************************************************
      **/
     
     carregaParamsForm = function(){
         
-        googleSheet.setSheetName('Parâmetros Formulário');
-        
-        // Carrega o select Cliente
-        googleSheet.getColumnData(["cliente"],"array",function(data, status, message){
-            $scope.params.cliente = data;
-        });
+        googleSheet.setSheetName(config.sheetParamsForm);
 
         // Carrega o select Projeto
         googleSheet.getColumnData(["projeto"],"array",function(data, status, message){
             $scope.params.projeto = status ? data : showError(message);
+            log($scope.params.projeto);
         });
 
         // Carrega o select Responsável Técnico
@@ -115,15 +123,15 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
          * @returns {undefined}
          */
         $scope.showDetalhamentos = function(detalhamento){
-           googleSheet.setSpreadSheetId('1dfZqj7IIEmYFMioF2_xm_dvhjKAsScHE3PeQgos6Uj8');
-           googleSheet.setSheetName("Parâmetros Formulário");
+           googleSheet.setSpreadSheetId(config.idSheetConfig);
+           googleSheet.setSheetName(config.sheetParamsForm);
            $scope.params.detalhamento = null;
            $scope.registro.detalhamento = "";
-           googleSheet.getColumnData(['pertenceAoComplemento','detalhamento'],'associativeArray',function(data, status, message){
+           googleSheet.getColumnData(['complementoDetalhamento','detalhamento'],'associativeArray',function(data, status, message){
                if(status){
                    $scope.params.detalhamento = [];
                    angular.forEach(data,function(object){
-                      if(object.pertenceAoComplemento === $scope.registro.complemento)
+                      if(object.complementoDetalhamento === $scope.registro.complemento)
                       $scope.params.detalhamento.push(object.detalhamento); 
                    });
                    if(detalhamento && $scope.params.detalhamento.indexOf(detalhamento) < 0){
@@ -139,14 +147,14 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
         };
 
         // Carrega as configurações de localização de arquivos
-        googleSheet.setSheetName('Níveis Gestão');
+        googleSheet.setSheetName(config.sheetParamsFiles);
         googleSheet.getColumnData(['entregaveis','localizacaoNoSistema','codigoEtapa','etapaFinalCronograma'],'associativeArray',function(data, status, message){
             $scope.params.configArquivos = status ? data : showError(message);
         });
 
-        //Exibe os Blocos dos empreendimentos
+        // Exibe os Blocos dos empreendimentos
         $scope.params.bloco = null;
-        googleSheet.setSheetName("Parâmetros Formulário");
+        googleSheet.setSheetName(config.sheetParamsForm);
         if($scope.registro.empreendimento)
             googleSheet.getColumnData(['blocos','blocosEmpreendimento'],'associativeArray',function(data, status, message){
                 if(status){
@@ -166,15 +174,15 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
         * @param {string} detalhamento detalhamento a ser selecionado automaticamente (Opcional)
         */
        $scope.showComplementos = function(complemento,detalhamento){
-           googleSheet.setSpreadSheetId('1dfZqj7IIEmYFMioF2_xm_dvhjKAsScHE3PeQgos6Uj8');
-           googleSheet.setSheetName("Parâmetros Formulário");
+           googleSheet.setSpreadSheetId(config.idSheetConfig);
+           googleSheet.setSheetName(config.sheetParamsForm);
            $scope.params.complemento = null;
            $scope.registro.complemento = "";
-           googleSheet.getColumnData(['pertenceAoProjeto','complemento'],'associativeArray',function(data, status, message){
+           googleSheet.getColumnData(['projetoComplemento','complemento'],'associativeArray',function(data, status, message){
                if(status){
                    $scope.params.complemento = [];
                    angular.forEach(data,function(object){
-                      if(object.pertenceAoProjeto === $scope.registro.projeto)
+                      if(object.projetoComplemento === $scope.registro.projeto)
                       $scope.params.complemento.push(object.complemento); 
                    });
                    $scope.registro.complemento = complemento ? complemento : "";
@@ -249,7 +257,7 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
                         if(!$scope.registro.complemento && !$scope.registro.detalhamento){
                             $scope.spinerloading = false;
                         }else{
-                            // Popula os select complemento e detalhamento se ouver
+                            // Popula os selects complemento e detalhamento se ouver
                             var _auxComplemento = $scope.registro.complemento;
                             var _auxDetalhamento = $scope.registro.detalhamento;
                             $scope.showComplementos($scope.registro.complemento,$scope.registro.detalhamento);
@@ -283,16 +291,14 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
      */
     $scope.salvar = function(){
         var message = "",
-            titulo = "";
-        if($scope.edicao){
             titulo = "Atenção!";
+        if($scope.edicao){
             message += $scope.params.arquivoEditavel && !$scope.registro.arquivoEditavel ? "Você irá manter o arquivo editável!<br/>" :"";
             message += $scope.params.arquivoImpressao && !$scope.registro.arquivoImpressao ? "Você irá manter o arquivo de impressão!<br/>" :"";
             message += $scope.params.arquivoPdf && !$scope.registro.arquivoPdf ? "Você irá manter o arquivo Pdf!<br/>" :"";
             message += $scope.params.comprovantePagamento && !$scope.registro.comprovantePagamento ? "Você irá manter o arquivo comprovante de pagamento!<br/>" :"";
             message += "<br/>Deseja realmente atualizar o registro?";
         }else{
-            titulo = "Confirmação";
             message += "Deseja realmente gravar o registro ?";
         }
         var dlg = dialogs.confirm(titulo,message);
@@ -306,7 +312,7 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
     
     /**
      * Função padrão para mensagem de erro
-     * @param {type} message Texto adicional para ser exibido na mensagem de erro
+     * @param {string} message Texto adicional para ser exibido na mensagem de erro
      * @returns {Boolean}
      */
     var showError = function(message){
@@ -342,12 +348,13 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
         document.getElementsByName("arquivoImpressao")[0].value = null;
         document.getElementsByName("arquivoPdf")[0].value = null;
         document.getElementsByName("comprovantePagamento")[0].value = null;
-        var auxEmp = $scope.registro.empreendimento;
-        var auxUsr = $scope.registro.usuario;
+        var auxEmp = $scope.registro.empreendimento,
+            auxUsr = $scope.registro.usuario;
         $scope.buttons = {};
         $scope.registro = {};
         $scope.registro.empreendimento = auxEmp;
         $scope.registro.usuario = auxUsr;
+        $scope.registro.cliente = $scope.params.cliente;
         $scope.params.complemento = null;
         $scope.formListaMestra.$setPristine();   
     };
@@ -381,28 +388,36 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
         };
         
         /*
-         * Função executada assim que um registro é atualizado
-         * @param {object} data Linha do registro atualizado
-         * @param {boolean} status Status da transaçãoão 
+         * Verifica se o arquivo recem gravado faz parte de um grupo de pranchas
+         * @param {int} data Linha do registro salvo ou atualizado na planilha
+         * @param {boolean} status Status da transação
          * @param {string} message Mensagem de retorno 
          */
-        successAtualizarDados = function(data, status, message){
-
-            if(status && auxArquivoEditavel){
-                $scope.messageLoading = "Atualizando links do grupo de pranchas...";
+        verificaGrupoPranchas = function(data, status, message){
+            var linhaRegAtual = data.linha;
+            if(status && $scope.registro.nGrupoPranchas){
+                $scope.messageLoading = "Verificando grupo de pranchas...";
                 googleSheet.getAllRecords("associativeArray",function(data, status, message2){
                     if(!status)
                         return showError(message2);
                     
-                    var regParaAtualizar = [];
+                    var regParaAtualizar = [], 
+                        arrFilesBackup = [];
                     angular.forEach(data,function(reg){
-                        if(reg.nGrupoPranchas === $scope.registro.nGrupoPranchas && reg.linha !== $scope.params.linha){
+                        if(reg.nGrupoPranchas === $scope.registro.nGrupoPranchas && reg.linha !== linhaRegAtual){
                             regParaAtualizar.push(reg);
+                            arrFilesBackup.push(reg.arquivoEditavel);
                         }
                     });
                     
                     if(regParaAtualizar.length > 0){
+                        $scope.messageLoading = "Efetuando backup dos arquivos antigos...";
+                        lmFiles.makeBackupFiles(arrFilesBackup,$scope.params.idPastaBackup,function(status,data,message2){
+                            if(!status)
+                                return showError(message2);
                             atualizaLinkEditavel(regParaAtualizar,message);
+                        });
+                        
                     }else{
                         successSalvarDados(data, status, message);
                     }
@@ -416,6 +431,7 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
              * @param {array} regParaAtualizar Array com os registros a serem atualizados
              */
             atualizaLinkEditavel = function(regParaAtualizar,message){
+                $scope.messageLoading = "Atualizando links do grupo de pranchas...";
                 regParaAtualizar[0].revisao++;
                 regParaAtualizar[0].arquivoEditavel = $scope.registro.arquivoEditavel;
                 regParaAtualizar[0].dataDocumento = $filter('date')(new Date(regParaAtualizar[0].dataDocumento),'yyyy-MM-dd');
@@ -428,33 +444,31 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
 
                     regParaAtualizar.shift();
                     if(regParaAtualizar.length>0){
-                        atualizaLinkEditavel(regParaAtualizar);
+                        atualizaLinkEditavel(regParaAtualizar,message);
                     }else{
                         successSalvarDados(data, status, message);
                     }
                 });
             };
         };
-        
-                
+                              
         /*
          * Inicia a gravação dos dados na planilha do Google
          */        
         gravaDadosPlanilha = function(){
             // Seta o ID da planilha e nome da página a serem gravados os dados
-            googleSheet.setSpreadSheetId(idPlanilha);
-            googleSheet.setSheetName('Índice Projetos');
+            googleSheet.setSpreadSheetId($scope.params.idPlanilha);
+            googleSheet.setSheetName(config.nameSheetListaMestra);
             
-            // Verifica se o registro possui um código. Se for false quer dizer que é um registro novo,
-            // caso contratio trata-se de uma atualização de um registro 
-            if(!$scope.registro.codigo){
+            // Verifica se o formulário não foi carregado para edição de um registro
+            if(!$scope.edicao){
                 $scope.messageLoading = "Gravando dados na planilha..";
                 
                 // Inicia a revisão do arquivo em 1;
                 $scope.registro.revisao = 1;
                 
                 // Insere um novo registro na planilha
-                googleSheet.insertRecord($scope.registro,successSalvarDados);
+                googleSheet.insertRecord($scope.registro,verificaGrupoPranchas);
             }else{
                 $scope.messageLoading = "Atualizando dados na planilha..";
 
@@ -466,7 +480,7 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
                 $scope.registro.revisao++;
 
                 // Atualiza um registro na planilha
-                googleSheet.updateRecord($scope.registro,"Código",$scope.registro.codigo,'Histórico Revisões',successAtualizarDados);  
+                googleSheet.updateRecord($scope.registro,"Código",$scope.registro.codigo,'Histórico Revisões',verificaGrupoPranchas);  
             }
         };
         
@@ -503,31 +517,21 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
         // Formata a data
         $scope.registro.dataDocumento = $filter('date')($scope.registro.dataDocumento,'yyyy-MM-dd');
         
-        // Faz o tratamento das indicações das pastas
+        // Faz o tratamento das indicações das pastas físicas
         $scope.registro.servidorTerra = $scope.buttons.ServidorTerra ? "SIM":"NÃO";
         $scope.registro.pastaFisicaCliente = $scope.buttons.PastaFisicaCliente ? "SIM":"NÃO";
         $scope.registro.pastaFisicaTerra = $scope.buttons.PastaFisicaTerra ? "SIM":"NÃO";
-        
+                
         // Faz o tratamento dos Blocos
         var auxBlocos = "",
-            keys = Object.keys($scope.registro.blocos).sort();
+            keys = $scope.registro.blocos? Object.keys($scope.registro.blocos).sort() : "";
         for(var i in keys){auxBlocos += $scope.registro.blocos[keys[i]] ? keys[i]+" ": "";}
         $scope.registro.blocos = auxBlocos.substring(0, auxBlocos.length -1);
         
         // Faz o tratamento da informação Detalhamento
         if($scope.registro.detalhamento === 'OUTRO')
             $scope.registro.detalhamento = $scope.registro.outroDetalhamento;
-
         delete $scope.registro.outroDetalhamento;
-        
-        // Procura pelas propriedades do empreendimento
-        for(var i = 0; i < $scope.params.configEmpreendimentos.length; i++){
-            if($scope.params.configEmpreendimentos[i].empreendimento === $scope.registro.empreendimento){
-                var idPlanilha = $scope.params.configEmpreendimentos[i].idPlanilha;
-                $scope.params.idPastaRaiz = $scope.params.configEmpreendimentos[i].idPastaRaiz;
-                break;
-            }
-        }
         
         // Busca pelas configurações dos níveis de gestão
         $scope.registro.codigoDoEntregavel = $scope.registro.projeto+($scope.registro.complemento ? " "+$scope.registro.complemento : "");
@@ -550,39 +554,30 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
         $scope.registro.nomeDocumento += $scope.registro.blocos? " BLOCOS "+$scope.registro.blocos : "";
         $scope.registro.nomeDocumento += $scope.registro.numeroPrancha? " "+$scope.registro.numeroPrancha : "";
         
-        // Faz manipulação dos arquivos para enviar para o Google Drive
+        // A partir daqui faz manipulação dos arquivos para enviar para o Google Drive e backup dos arquivos antigos
+        // se houver.
         var auxArquivoEditavel = $scope.registro.arquivoEditavel,
             auxArquivoImpressao = $scope.registro.arquivoImpressao,
             auxArquivoPdf = $scope.registro.arquivoPdf;
     
-        var arrFilesBackup= [];
-        
-        if($scope.edicao){
-            if(!$scope.registro.arquivoEditavel){
-                $scope.registro.arquivoEditavel = $scope.params.arquivoEditavel; 
-            }else if($scope.params.arquivoEditavel){
-                 arrFilesBackup.push($scope.params.arquivoEditavel); 
-            }
-            if(!$scope.registro.arquivoImpressao){
-                $scope.registro.arquivoImpressao = $scope.params.arquivoImpressao; 
-            }else if($scope.params.arquivoImpressao){
-                arrFilesBackup.push($scope.params.arquivoImpressao); 
-            }
-            if(!$scope.registro.arquivoPdf){
-                $scope.registro.arquivoPdf = $scope.params.arquivoPdf;
-            }else if($scope.params.arquivoPdf){
-                arrFilesBackup.push($scope.params.arquivoPdf);  
-            }            
-        };
-        
+        var arrFilesBackup= [];       
         var arrayArquivos = 
-            [{id : "arquivoEditavel",description:"Arquivo Editável", file: $scope.registro.arquivoEditavel},
-            {id : "arquivoImpressao",description:"Arquivo Impressão", file: $scope.registro.arquivoImpressao},
-            {id : "arquivoPdf",description:"Arquivo Pdf", file: $scope.registro.arquivoPdf},
-            {id : "comprovantePagamento",description:"Comprovante Pagamento", file:$scope.registro.comprovantePagamento}];
-         
+            [{id : "arquivoEditavel",description:"Arquivo Editável", file: null},
+            {id : "arquivoImpressao",description:"Arquivo Impressão", file: null},
+            {id : "arquivoPdf",description:"Arquivo Pdf", file: null},
+            {id : "comprovantePagamento",description:"Comprovante Pagamento", file:null}];
+        
+        angular.forEach(arrayArquivos,function(arquivo){
+           if(!$scope.registro[arquivo.id]){
+               $scope.registro[arquivo.id] = $scope.params[arquivo.id];
+           }else if($scope.params[arquivo.id]){
+               arrFilesBackup.push($scope.params[arquivo.id]);
+           }
+           arquivo.file = $scope.registro[arquivo.id];
+        });
+                
         if(arrFilesBackup.length > 0){
-            $scope.messageLoading = "Efetuando backup dos arquivos antigos!"
+            $scope.messageLoading = "Efetuando backup dos arquivos antigos...";
             lmFiles.makeBackupFiles(arrFilesBackup,$scope.params.idPastaBackup,function(status,data,message){
                 if(!status)
                     return showError(message);
@@ -604,7 +599,7 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
             detalhamento : "Ble Ble ble ble..."
         };
         googleSheet.setSpreadSheetId("1ZBHukrngNqO6mS-iEn_Ca4T-t8ck-Q2-rUyieR7ZTXQ");
-        googleSheet.setSheetName("Índice Projetos");
+        googleSheet.setSheetName(config.nameSheetListaMestra);
         googleSheet.updateRecords(object,"Código","193",null,function(data, status, message){
             console.log(data);
             console.log(status);
@@ -612,16 +607,7 @@ app.controller('formListaMestra',function($rootScope,$http,$scope,$filter,$timeo
         });
     };
     
-    $scope.teste2 = function(){
-        var arrFiles = [];
-            arrFiles.push($scope.params.arquivoEditavel); 
-            arrFiles.push($scope.params.arquivoImpressao); 
-            arrFiles.push($scope.params.arquivoPdf);
-        lmFiles.makeBackupFiles(arrFiles,$scope.params.idPastaBackup,function(status,data,message){
-            if(!status)
-                return showError(message);
-            console.log(message);
-        });
-         
+    $scope.teste2 = function(){    
+        log("Panaca");
     };
   });
