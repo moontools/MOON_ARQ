@@ -395,7 +395,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
          */
         verificaGrupoPranchas = function(data, status, message){
             var linhaRegAtual = data.linha;
-            if(status && $scope.registro.nGrupoPranchas){
+            if(status && $scope.registro.nGrupoPranchas && auxArquivoEditavel){
                 $scope.messageLoading = "Verificando grupo de pranchas...";
                 googleSheet.getAllRecords("associativeArray",function(data, status, message2){
                     if(!status)
