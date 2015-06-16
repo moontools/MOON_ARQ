@@ -29,11 +29,11 @@
     angular.module('mtl.gdrive',[])    
     .factory('mtlGdrive',function(){
         
-        log = function(msg){
-            if(localStorage.development === "true"){
-                console.log(msg);
-            }
-        };
+//        log = function(msg){
+//            if(localStorage.development === "true"){
+//                console.log(msg);
+//            }
+//        };
 
         // Variáveis locais
         var _clientId = '';
@@ -161,6 +161,15 @@
             };
         };
 
+        driveApi.updateMetadataFile = function(fileId, metaData, callback){
+            var params = {
+                'path' : 'https://www.googleapis.com/drive/v2/files/'+fileId,
+                'method' : 'PUT',
+                'body' : metaData
+            }
+            _request(params,callback);
+        }
+        
         /**
          * Insere uma permissão em determinado arquivo
          * @param {string} fileId Id do arquivo
@@ -180,7 +189,6 @@
                     'type': type,
                     'role': role }
             };
-
             _request(params,callback);
         };
 

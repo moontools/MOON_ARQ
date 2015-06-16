@@ -219,9 +219,33 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
     
     this.makeBackupFiles = function(arrayFilesLink,idFolderBackup,callback){
         log("Iniciando backup dos aquivos");
-        moveFile(arrayFilesLink,idFolderBackup,function(status,data,message){
-           callback(status,data,message); 
-        });
+        moveFile(arrayFilesLink,idFolderBackup,callback);
+    };
+    
+    var renameFiles = function(arrayFilesId,title,callback){
+        if(arrayFilesId.length > 0){
+            mtlGdrive.getInfoFile(arrayFilesId[0],function(result){
+                console.log(result);
+                var metaData = {
+                    'title' : title+"."+result.fileExtension,
+                };
+                mtlGdrive.updateMetadataFile(arrayFilesId[0], metaData, function(result){
+                    if(result.error){
+                        callback(false,null,result.error.message);
+                    }else{
+                        arrayFilesId.shift();
+                        renameFiles(arrayFilesId,title,callback);
+                    }
+                }); 
+            });
+
+        }else{
+            callback(true,null,'Arquivos renomeados com sucesso!');
+        }  
+    };
+    
+    this.updateNameFiles = function(arrayFilesId,title,callback){
+      renameFiles(arrayFilesId,title,callback); 
     };
     
     

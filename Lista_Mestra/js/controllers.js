@@ -101,7 +101,6 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
         // Carrega o select Projeto
         googleSheet.getColumnData(["projeto"],"array",function(data, status, message){
             $scope.params.projeto = status ? data : showError(message);
-            log($scope.params.projeto);
         });
 
         // Carrega o select Responsável Técnico
@@ -217,10 +216,12 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
                         
                         if(!status)
                             return showError(message);
+                       
+                        $scope.registroAntigo = (JSON.parse(JSON.stringify(data)));
                         
                         // Carrega os dados no objeto registro
                         $scope.registro = data;
-                        
+
                         // Altera o e-mail para o usuário logado.
                         $scope.registro.usuario = $scope.params.usuario;
 
@@ -244,7 +245,6 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
                         $scope.params.arquivoImpressao = $scope.registro.arquivoImpressao;
                         $scope.params.arquivoPdf = $scope.registro.arquivoPdf;
                         $scope.params.comprovantePagamento = $scope.registro.comprovantePagamento;
-                        $scope.params.linha = $scope.registro.linha;
                         $scope.registro.arquivoEditavel = null;
                         $scope.registro.arquivoImpressao = null;
                         $scope.registro.arquivoPdf = null;
@@ -472,7 +472,26 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
             }else{
                 $scope.messageLoading = "Atualizando dados na planilha..";
 
-                // Remove as informaçõe que são calculadas automaticamente por formulas na planilha
+//                if($scope.registro.nGrupoPranchas !== $scope.registroAntigo.nGrupoPranchas ||
+//                $scope.registro.projeto !== $scope.registroAntigo.projeto ||
+//                $scope.registro.complemento !== $scope.registroAntigo.complemento ||
+//                $scope.registro.blocos !== $scope.registroAntigo.blocos){
+//                    log("Nome do arquivo deve ser alterado");
+//                    log(arrayArquivos);
+//                    log($scope.registro.nomeDocumento);
+//                    var arryFilesRename = [];
+////                    angular.forEach(arrayArquivos,function(arquivo){
+////                        arryFilesRename.push(arquivo.file);
+////                    });
+////                    lmFiles.updateNameFiles([],"AUSHUAHSUHAUSHAUS.jpg",function(status,data,message){;
+////                        log(status);    
+////                        log(data);    
+////                        log(message);    
+////                    });
+//                    
+//                }
+                
+                // Remove as informaçõe que são geradas automaticamente por formulas na planilha
                 delete $scope.registro.linha;
                 delete $scope.registro.adicionar;
 
@@ -485,7 +504,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
         };
         
         // Iniciar a verificação de arquivos para upload
-        uploadFile = function(){
+        uploadFile = function(arrayArquivos){
             if(arrayArquivos.length > 0){
                 if(typeof(arrayArquivos[0].file) === "object" && arrayArquivos[0].file ){
                     $scope.messageLoading = "Gravando "+arrayArquivos[0].description+"...";
@@ -581,10 +600,10 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
             lmFiles.makeBackupFiles(arrFilesBackup,$scope.params.idPastaBackup,function(status,data,message){
                 if(!status)
                     return showError(message);
-                uploadFile();
+                uploadFile(arrayArquivos.slice(0));
             }); 
         }else{
-           uploadFile(); 
+           uploadFile(arrayArquivos.slice(0)); 
         }                                 
     };
     /**
@@ -608,6 +627,10 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
     };
     
     $scope.teste2 = function(){    
-        log("Panaca");
+        lmFiles.updateNameFiles(['0B7C12ldJ-VYWU0dpZS03Tnduc1E','0B7C12ldJ-VYWVzVEYndqMFJrUzg'],"Lol :)",function(status,data,message){
+            log(status);    
+            log(data);    
+            log(message);    
+        });
     };
   });
