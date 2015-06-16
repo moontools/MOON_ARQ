@@ -40,8 +40,10 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
     
     // Carrega as configurações dos empreendimentos
     googleSheet.setSheetName(config.sheetConfigEmp);
-    googleSheet.getColumnData(['cliente','empreendimento','idPlanilha','idPastaRaiz','idPastaBackup','emailGrupo','nomePagina'],'associativeArray',function(data, status, message){
+    log("Buscando configurações dos empreendimentos...")
+    googleSheet.getColumnData(['cliente','empreendimento','idPlanilha','idPastaRaiz','idPastaBackup','emailGrupoAcesso','nomePagina'],'associativeArray',function(data, status, message){
         $scope.params.configEmpreendimentos = status ? data : showError(message);
+        log("Resgatadas configurações dos empreendimentos...");
         for(var i in data){
             if($scope.registro.empreendimento === $scope.params.configEmpreendimentos[i].empreendimento){
                 angular.forEach(data[i],function(val, key){
@@ -51,19 +53,22 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
             }
         }
         $scope.registro.cliente = $scope.params.cliente;
-        if(!$scope.params.emailGrupo){
+        if(!$scope.params.emailGrupoAcesso){
             $scope.spinerloading = false;
             return showError("Empreendimento inválido!");
         }
-        verificaAcesso($scope.params.emailGrupo);
+        verificaAcesso($scope.params.emailGrupoAcesso);
     });
     
     /*
      * Verifica se o usuário pode acessar o formulário
-     * @param {string} emailGrupo email do grupo a ser consultado
+     * @param {string} emailGrupoAcesso email do grupo a ser consultado
      */
-    verificaAcesso = function(emailGrupo){
-        acessos.getAccessByGroup(emailGrupo,function(data, status, message){
+    verificaAcesso = function(emailGrupoAcesso){
+        log("Verificando acesso do usuário...");
+        acessos.getAccessByGroup(emailGrupoAcesso,function(data, status, message){
+            log(status);
+            log(data);
             if(status && data){
                 $scope.registro.usuario = data;
                 $scope.params.usuario = data;
@@ -74,6 +79,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
                 $scope.params.usuario = data;
                 $scope.params.acesso = false;
                 $scope.params.erroAcesso = message;
+                $scope.spinerloading = false;
             }else{
                 var dlg = dialogs.error('Erro','Erro ao autenticar usuário. <br>\n\
                                         Se você estiver acessando este formulário pela primeira vez, por favor\n\
@@ -86,6 +92,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,mtl
             }
             if(!$scope.registro.codigo)
                 $scope.spinerloading = false;
+            log("Acesso verificado");
         });
     };
       
