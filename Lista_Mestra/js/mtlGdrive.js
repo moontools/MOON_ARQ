@@ -57,8 +57,8 @@
             // Verifica se a API do Google foi carregada
             if (typeof gapi.auth !== 'undefined') {
                 // Caso positivo verifica a autorização do usuário
-                log('Drive API Carregada...');
-                log("verificando Autenticação");
+                log('-> Drive Rest API Carregada!');
+                log("Verificando autenticação Drive API...");
                 gapi.auth.authorize(
                    {'client_id': _clientId, 'scope': _scopes, 'immediate': true},
                    _handleAuthResult);
@@ -73,7 +73,7 @@
         * Função chamada enquando a API do Google esta sendo carregada
         */
         var _handleClientLoad = function () {
-            log("Carregando Drive API...");
+            log("Carregando Drive Rest API...");
             window.setTimeout(driveApi.checkAuth, 1);			
         };
 
@@ -84,7 +84,7 @@
         var _handleAuthResult = function(authResult){
             // Verifcica se o usuário autorizou a aplicação
             if (authResult && !authResult.error) {
-                log("Autenticado com sucesso!");
+                log("-> Drive Rest API Autenticado com sucesso!");
             }else{
                 
                 // Caso negativo exibe tela de autenticação
@@ -297,7 +297,6 @@
             request.execute(callback);  
         };
 
-        driveApi.checkAuth();
         return driveApi;
     
     });

@@ -86,21 +86,22 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
      */
     var conhecerFilhos = function(idFolder,itens,patchFolder){
         if(itens.length > 0){
+            log("Estou procurando a pasta "+patchFolder[0]+"...");
             mtlGdrive.getInfoFile(itens[0].id,function(result){
                 if(result.error)
                     return error(result.error.message);
                 if(result.mimeType === 'application/vnd.google-apps.folder' && result.title === patchFolder[0]){
-                    log("Achei a pasta "+result.title);
+                    log("-> Achei a pasta "+result.title);
                     patchFolder.shift();
                     descobreFilhos(result.id,patchFolder);
                 }else{
-                    log("Estou procurando");
+                    
                     itens.shift();
                     conhecerFilhos(idFolder,itens,patchFolder);
                 }
             });
         }else{
-            log("Terminei a procura de "+patchFolder[0]+" e não achei");
+            log("-> Terminei a procura de "+patchFolder[0]+" e não achei!");
             criarPasta(patchFolder,idFolder);
         }
     };
@@ -113,11 +114,11 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
      */
     var criarPasta = function(patchFolder, idParent){
         if(patchFolder.length > 0){
-            log("Vou criar a pasta "+patchFolder[0]+" na pasta cujo id é "+idParent);
+            log("Vou criar a pasta "+patchFolder[0]+" na pasta cujo id é "+idParent+"...");
             mtlGdrive.createFolder(patchFolder[0],[idParent],function(result){
                 if(result.error)
                     return error(result.error.message);
-                log("Criei a pasta "+patchFolder[0]+" cujo id é "+result.id);
+                log("-> Criei a pasta "+patchFolder[0]+" cujo id é "+result.id);
                 patchFolder.shift();
                 criarPasta(patchFolder,result.id);
             });
@@ -157,13 +158,13 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
      * @params {array} parents Array com os ids das pastas onde o arquivo deverá ser inserido;
      */
     var saveFile = function(parents){
-        log("Vou inserir o arquivo "+fileData);
+        log("Vou inserir o arquivo "+fileData+"...");
         if(!fileData)
             return error("Tentativa de upload de arquivo inválido.");
         mtlGdrive.insertFile(fileData,titleFile,parents,function(result){
             if(result.error)
                 return error(result.error.message);
-            log("Inseri o arquivo");
+            log("-> Arquivo inserido!");
             linkArquivo = result.alternateLink;
             status = true;
             processing = false;
@@ -171,26 +172,26 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
     };
     
     /*
-     * Move um arquivo
-     * @param {string} folderOrigemId Id da pasta de origem
-     * @param {type} fileId Id ddo arquivo a ser movido
-     * @param {type} FolderDestinoId Id da pasta destino
+     * Move um arquivo no drive
+     * @param {array} arrayFilesLink Array com os ids dos arquivos a serem movidos
+     * @param {string} FolderDestinoId Id do folder destino
      * @param {function} callback Função a ser executada ao fim da requisição
-     * @returns {function} callback executa função de callback
+     * @returns {function} callback function
      */
     var moveFile = function(arrayFilesLink,FolderDestinoId,callback){
         if(arrayFilesLink.length > 0){
             var idFile = arrayFilesLink[0].split("file/d/")[1];
                 idFile = idFile.split("/edit")[0];
-            log("Obtendo informação do arquivo "+arrayFilesLink[0]);
+            log("Obtendo informação do arquivo "+arrayFilesLink[0]+"...");
             mtlGdrive.getInfoFile(idFile,function(result){
                 var id = result.id,
                     fileInf = result;
-                log("Adicionando o arquivo cujo id é "+id+" na pasta cujo id é "+FolderDestinoId);
+                log("Adicionando o arquivo cujo id é "+id+" na pasta cujo id é "+FolderDestinoId+"...");
                 mtlGdrive.addFileIntoFolder(FolderDestinoId, id,function(result){
                     if(result.error){
                         callback(false,result,result.error);
                     }else{
+                        log("-> Arquivo adicionado!");
                         if(fileInf.parents.length > 0){
                             log("Removendo o arquivo cujo id é "+id+" da pasta cujo id e é "+fileInf.parents[0].id);
                             mtlGdrive.removeFileFromFolder(fileInf.parents[0].id,id,function(result){
@@ -199,6 +200,7 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
                                         callback(false,result,result.error);
                                     }
                                 }else{
+                                    log("-> Arquivo remocido!");
                                     arrayFilesLink.shift();
                                     moveFile(arrayFilesLink,FolderDestinoId,callback);
                                 }
@@ -212,16 +214,30 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
                 }); 
             });
         }else{
+            log("-> Backup dos arquivos finalizado!");
             callback(true,null,"Backup efetuado com sucesso!");
         }   
     };
     
-    
+    /*
+     * Inicia o backup dos arquivos
+     * @param {array} arrayFilesLink Array com os ids dos arquivos a serem movidos
+     * @param {string} FolderDestinoId Id do folder destino
+     * @param {function} callback Função a ser executada ao fim da requisição
+     * @returns {function} callback function
+     */
     this.makeBackupFiles = function(arrayFilesLink,idFolderBackup,callback){
-        log("Iniciando backup dos aquivos");
+        log("Iniciando backup dos aquivos...");
         moveFile(arrayFilesLink,idFolderBackup,callback);
     };
     
+    /*
+     * Renomeia um arquivo no drive
+     * @param {array} arrayFilesId Array com o id dos arquivos a terem o nome atualizado.
+     * @param {string} title Novo nome para os arquivos
+     * @param {function} callback Função a ser executada ao fim da requisição
+     * @returns {function} callback function
+     */
     var renameFiles = function(arrayFilesId,title,callback){
         if(arrayFilesId.length > 0){
             mtlGdrive.getInfoFile(arrayFilesId[0],function(result){
@@ -244,6 +260,13 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
         }  
     };
     
+    /*
+     * Inicia a atualização do nome dos arquivos
+     * @param {array} arrayFilesId Array com o id dos arquivos a terem o nome atualizado.
+     * @param {string} title Novo nome para os arquivos
+     * @param {function} callback Função a ser executada ao fim da requisição
+     * @returns {function} callback function
+     */
     this.updateNameFiles = function(arrayFilesId,title,callback){
       renameFiles(arrayFilesId,title,callback); 
     };
@@ -276,4 +299,50 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
            callback(status,null,e.message); 
         }
     };
+});
+
+/*
+ * Serviço para enviar e-mail de notificação para interessados
+ */
+app.service('lmNotificacao',function($http){
+    
+    // Urls da API Apps Script
+    var _urlDev = 'https://script.google.com/a/macros/moontools.com.br/s/AKfycbwSZT17hrIQPEtcQcylNMH_XF47rdWxCTJLxZm5Klw/dev',
+        _urlExec = 'https://script.google.com/macros/s/AKfycbwtCImR4EdpIaZ3lOTByJde9njlUwQSn3BM6HXef6MXFtr3AEk/exec';
+    
+    /*
+     * Envia o e-mail de notificação
+     * 
+     * @param {object} registro Dados do registro inserido ou atualizado.
+     * @param {string} tipoAcao Tipo de Ação. Registro novo ou Atualização de registro existente.
+     * @param {string} emailGrupoNotificacao Email do grupo a ser notificado.
+     * @param {function} callback Função a ser executada ao fim da requisição
+     * @returns {function} callback function
+     */
+    this.sendMail = function(registro,tipoAcao,emailGrupoNotificacao,callback){
+        
+        var params = {
+            tipoAcao:tipoAcao,
+            empreendimento:registro.empreendimento,
+            codigo:registro.codigo,
+            projeto:registro.projeto,
+            complemento:registro.complemento,
+            descricaoArquivo:registro.descricaoArquivo,
+            observacoes:registro.observacoes,
+            arquivoImpressao:registro.arquivoImpressao,
+            arquivoPdf:registro.arquivoPdf,
+            emailGrupoNotificacao : emailGrupoNotificacao
+        },
+        _urlApi = localStorage.development === 'true' ? _urlDev : _urlExec; 
+
+        $http({url:_urlApi+"?callback=JSON_CALLBACK",
+               method:"jsonp",
+               params:params
+        }).success(function(data, status, headers, config){
+           callback(data.status, data.data, data.message);
+        }).error(function(data, status, headers, config){
+           callback(data, false, status);
+        }); 
+    };
+    
 });

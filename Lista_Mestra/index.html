@@ -159,39 +159,39 @@
                         <select name="complemento"
                                 ng-options="complemento as complemento for complemento in params.complemento"
                                 class="form-control"
-                                ng-class="{'spinner' : !params.complemento || (formListaMestra.complemento.$valid && !formListaMestra.complemento.$pristine && !params.detalhamento)}"
+                                ng-class="{'spinner' : !params.complemento || (formListaMestra.complemento.$valid && !formListaMestra.complemento.$pristine && !params.descricaoArquivo)}"
                                 ng-model="registro.complemento"
                                 ng-required="registro.complemento"
-                                ng-change="showDetalhamentos()">
+                                ng-change="showDescricaoArquivos()">
                             <option></option>
                         </select>
                     </div> 
                     <!-- Fim Complemento -->
                     
                     <!-- Detalhamento -->
-                    <div class="form-group animated" ng-class="{'fadeIn' : params.detalhamento.length > 0}" ng-show="params.detalhamento.length > 0" ng-class="{ 'has-error' : formListaMestra.detalhamento.$invalid && !formListaMestra.detalhamento.$pristine}">      
-                        <label class="control-label">Detalhamento </label>
-                        <small class="help-block" ng-show="formListaMestra.detalhamento.$invalid && !formListaMestra.detalhamento.$pristine">Selecione um detalhamento</small>
-                        <select name="detalhamento"
-                                ng-options="detalhamento as detalhamento for detalhamento in params.detalhamento"
+                    <div class="form-group animated" ng-class="{'fadeIn' : params.descricaoArquivo.length > 0}" ng-show="params.descricaoArquivo.length > 0" ng-class="{ 'has-error' : formListaMestra.descricaoArquivo.$invalid && !formListaMestra.descricaoArquivo.$pristine}">      
+                        <label class="control-label">Descrição arquivo </label>
+                        <small class="help-block" ng-show="formListaMestra.descricaoArquivo.$invalid && !formListaMestra.descricaoArquivo.$pristine">Selecione uma descrição</small>
+                        <select name="descricaoArquivo"
+                                ng-options="descricaoArquivo as descricaoArquivo for descricaoArquivo in params.descricaoArquivo"
                                 class="form-control"
-                                ng-class="{'spinner' : !params.detalhamento}"
-                                ng-model="registro.detalhamento" 
-                                ng-required = "params.detalhamento.length > 0">
+                                ng-class="{'spinner' : !params.descricaoArquivo}"
+                                ng-model="registro.descricaoArquivo" 
+                                ng-required = "params.descricaoArquivo.length > 0">
                             <option></option>
                         </select>
                     </div> 
                     <!-- Fim Detalhamento -->
                     
                     <!--Outro Detalhamento-->
-                    <div class="form-group animated" ng-class="{'fadeIn' : registro.detalhamento == 'OUTRO'}" ng-show="registro.detalhamento == 'OUTRO'" ng-class="{ 'has-error' : formListaMestra.outroDetalhamento.$invalid && !formListaMestra.outroDetalhamento.$pristine}">
-                        <label class="control-label">Descreva o detalhamento </label>
+                    <div class="form-group animated" ng-class="{'fadeIn' : registro.descricaoArquivo == 'OUTRO'}" ng-show="registro.descricaoArquivo == 'OUTRO'" ng-class="{ 'has-error' : formListaMestra.outraDescricaoArquivo.$invalid && !formListaMestra.outraDescricaoArquivo.$pristine}">
+                        <label class="control-label">Insira a descrição do arquivo</label>
                         <input type="text"
                                capitalize
-                               name="outroDetalhamento"
+                               name="outraDescricaoArquivo"
                                class="form-control" 
-                               ng-model="registro.outroDetalhamento"
-                               ng-required="registro.detalhamento == 'OUTRO'">
+                               ng-model="registro.outraDescricaoArquivo"
+                               ng-required="registro.descricaoArquivo == 'OUTRO'">
                     </div>
                     <!--FIM Outro Detalhamento-->
                     
@@ -437,12 +437,6 @@
                             <button type="submit" class="btn btn-primary" ng-disabled="formListaMestra.$invalid" >
                                 Salvar
                             </button>
-<!--                            <button type="button" class="btn btn-primary" ng-click="teste()" >
-                                Testar
-                            </button>
-                            <button type="button" class="btn btn-primary" ng-click="teste2()" >
-                                Testar 2
-                            </button>-->
                         
                     </div>
                     <!-- Fim Botão Salvar -->
