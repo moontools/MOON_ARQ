@@ -325,7 +325,7 @@
                         <label class=" control-label">Arquivo editável </label>
                         </br>
                         <small class="help-block" ng-show="registro.codigo && params.arquivoEditavel">                        
-                            <a href="{{params.arquivoEditavel}}" target="_blank">{{registro.nomeDocumento}}</a>
+                            <a href="{{params.arquivoEditavel}}" target="_blank">{{registro.nomeArquivo}}</a>
                             -> Link do atual documento.
                         </small>
                         <input type="file"
@@ -343,7 +343,7 @@
                     <div class="form-group">      
                         <label class="control-label">Arquivo impressão </label>
                         <small class="help-block" ng-show="registro.codigo && params.arquivoImpressao">                        
-                            <a href="{{params.arquivoImpressao}}" target="_blank">{{registro.nomeDocumento}}</a>
+                            <a href="{{params.arquivoImpressao}}" target="_blank">{{registro.nomeArquivo}}</a>
                             -> Link do atual documento.
                         </small>
                         <input type="file"
@@ -359,7 +359,7 @@
                     <div class="form-group">      
                         <label class=" control-label">Arquivo PDF </label>
                         <small class="help-block" ng-show="registro.codigo && params.arquivoPdf">                        
-                            <a href="{{params.arquivoPdf}}" target="_blank">{{registro.nomeDocumento}}</a>
+                            <a href="{{params.arquivoPdf}}" target="_blank">{{registro.nomeArquivo}}</a>
                             -> Link do atual documento.
                         </small>
                         <input type="file"
@@ -390,7 +390,7 @@
                     <div class="form-group">      
                         <label class=" control-label">Comprovante pagamento </label>
                         <small class="help-block" ng-show="registro.codigo && params.comprovantePagamento">
-                            <a href="{{params.comprovantePagamento}}" target="_blank">{{registro.nomeDocumento}}</a>
+                            <a href="{{params.comprovantePagamento}}" target="_blank">{{registro.nomeArquivo}}</a>
                             -> Link do atual documento.
                         </small>
                         <input type="file"
@@ -436,6 +436,9 @@
                         <label class="control-label"></label>
                             <button type="submit" class="btn btn-primary" ng-disabled="formListaMestra.$invalid" >
                                 Salvar
+                            </button>
+                            <button type="button" class="btn btn-primary" ng-click="teste2()" >
+                                Teste2
                             </button>
                         
                     </div>

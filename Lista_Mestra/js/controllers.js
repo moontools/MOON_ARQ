@@ -507,26 +507,38 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 // Insere um novo registro na planilha
                 googleSheet.insertRecord($scope.registro,verificaGrupoPranchas);
             }else{
+                // Verifica se houve alteração no nome do arquivo 
+                if($scope.registro.nGrupoPranchas !== $scope.registroAntigo.nGrupoPranchas ||
+                   $scope.registro.codigoDoEntregavel !== $scope.registroAntigo.codigoDoEntregavel ||
+                   $scope.registro.blocos !== $scope.registroAntigo.blocos){
+                    $scope.spinerloading = "Renomeando arquivos...";
+                    var arrayFilesRename = [];
+                    angular.forEach(arrayArquivos,function(arquivo){
+                        if(arquivo.file)
+                            arrayFilesRename.push(arquivo.file);
+                    });
+                    log(arrayFilesRename);
+                    if(arrayFilesRename.length > 0){
+                        lmFiles.updateNameFiles(arrayFilesRename.slice(0),$scope.registro.nomeArquivo,function(status,data,message){;
+                            if(!status)
+                                return showError("Erro ao renomear arquivos! "+message);
+                            log($scope.registro.codigoDoEntregavel);
+                            log($scope.registroAntigo.codigoDoEntregavel);
+                            if($scope.registro.codigoDoEntregavel !== $scope.registroAntigo.codigoDoEntregavel){
+                                lmFiles.setFolderRaiz($scope.params.idPastaRaiz);
+                                lmFiles.setPatchFolder($scope.registro.localizacaoNoSistema);
+                                log(arrayFilesRename);
+                                lmFiles.moveFiles(arrayFilesRename, function(status, data, message){
+                                    log(status);
+                                    log(data);
+                                    log(message);
+                                });
+                            }
+                        });
+                    }   
+                }
+                                
                 $scope.messageLoading = "Atualizando dados na planilha..";
-
-//                if($scope.registro.nGrupoPranchas !== $scope.registroAntigo.nGrupoPranchas ||
-//                $scope.registro.projeto !== $scope.registroAntigo.projeto ||
-//                $scope.registro.complemento !== $scope.registroAntigo.complemento ||
-//                $scope.registro.blocos !== $scope.registroAntigo.blocos){
-//                    log("Nome do arquivo deve ser alterado");
-//                    log(arrayArquivos);
-//                    log($scope.registro.nomeDocumento);
-//                    var arryFilesRename = [];
-////                    angular.forEach(arrayArquivos,function(arquivo){
-////                        arryFilesRename.push(arquivo.file);
-////                    });
-////                    lmFiles.updateNameFiles([],"AUSHUAHSUHAUSHAUS.jpg",function(status,data,message){;
-////                        log(status);    
-////                        log(data);    
-////                        log(message);    
-////                    });
-//                    
-//                }
                 
                 // Remove as informaçõe que são geradas automaticamente por formulas na planilha
                 delete $scope.registro.linha;
@@ -548,7 +560,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                     // Seta as configurações necessárias para enviar os arquivos para o Drive
                     lmFiles.setFolderRaiz($scope.params.idPastaRaiz);
                     lmFiles.setPatchFolder($scope.registro.localizacaoNoSistema);
-                    lmFiles.setFile(arrayArquivos[0].file,$scope.registro.nomeDocumento);
+                    lmFiles.setFile(arrayArquivos[0].file,$scope.registro.nomeArquivo);
                     // Iniciar o upload do arquivo
                     lmFiles.uploadFile(function(status,data,message){
                         if(!status)
@@ -562,7 +574,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                     uploadFile(arrayArquivos);
                 }   
             }else{
-                log("-> Upload de arquivos finalizado!")
+                log("-> Upload de arquivos finalizado!");
                 gravaDadosPlanilha();
             }
         };
@@ -579,12 +591,18 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         $scope.registro.pastaFisicaCliente = $scope.buttons.PastaFisicaCliente ? "SIM":"NÃO";
         $scope.registro.pastaFisicaTerra = $scope.buttons.PastaFisicaTerra ? "SIM":"NÃO";
         $scope.registro.notificarCliente = $scope.buttons.NotificarCliente ? "SIM":"NÃO";
-                
-        // Faz o tratamento dos Blocos
-        var auxBlocos = "",
-            keys = $scope.registro.blocos? Object.keys($scope.registro.blocos).sort() : "";
-        for(var i in keys){auxBlocos += $scope.registro.blocos[keys[i]] ? keys[i]+" ": "";}
-        $scope.registro.blocos = auxBlocos.substring(0, auxBlocos.length -1);
+        
+
+        // Teste se a variável blocos é do tipo objeto. Quando o formulário e submetido 
+        // e por algum motivo ocorre um erro, ao ser submetido novamente não precisa fazer
+        // este tratamento novamente
+        if(typeof($scope.registro.blocos) === "object"){
+            // Faz o tratamento dos Blocos
+            var auxBlocos = "",
+                keys = $scope.registro.blocos? Object.keys($scope.registro.blocos).sort() : "";
+            for(var i in keys){auxBlocos += $scope.registro.blocos[keys[i]] ? keys[i]+" ": "";}
+            $scope.registro.blocos = auxBlocos.substring(0, auxBlocos.length -1);
+        }
         
         // Faz o tratamento da informação Detalhamento
         if($scope.registro.descricaoArquivo === 'OUTRO')
@@ -603,15 +621,20 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
             }
         }
         
+        // Verifica se existe uma localização válida para salvar os arquivos
+        if(!$scope.registro.localizacaoNoSistema)
+            return showError("Não foi possível identificar a localização do arquivo,\n\
+                              o sistema não pode continuar! Por favor entre em contato com \n\
+                              o responsável por manter essa configuração.");
         // Monta o nome do arquivo
-        $scope.registro.nomeDocumento = $scope.registro.cliente;
-        $scope.registro.nomeDocumento += " "+$scope.registro.empreendimento;
-        $scope.registro.nomeDocumento += " "+$scope.registro.projeto;
-        $scope.registro.nomeDocumento += $scope.registro.complemento? " "+$scope.registro.complemento : "";
-        $scope.registro.nomeDocumento += $scope.registro.nGrupoPranchas? " "+$scope.registro.nGrupoPranchas : "";
-        $scope.registro.nomeDocumento += $scope.registro.blocos? " BLOCOS "+$scope.registro.blocos : "";
-        $scope.registro.nomeDocumento += $scope.registro.numeroPrancha? " "+$scope.registro.numeroPrancha : "";
-        $scope.registro.nomeDocumento += " "+$scope.registro.descricaoArquivo;
+        $scope.registro.nomeArquivo = $scope.registro.cliente;
+        $scope.registro.nomeArquivo += " "+$scope.registro.empreendimento;
+        $scope.registro.nomeArquivo += " "+$scope.registro.projeto;
+        $scope.registro.nomeArquivo += $scope.registro.complemento? " "+$scope.registro.complemento : "";
+        $scope.registro.nomeArquivo += $scope.registro.nGrupoPranchas? " "+$scope.registro.nGrupoPranchas : "";
+        $scope.registro.nomeArquivo += $scope.registro.blocos? " BLOCOS "+$scope.registro.blocos : "";
+        $scope.registro.nomeArquivo += $scope.registro.numeroPrancha? " "+$scope.registro.numeroPrancha : "";
+        $scope.registro.nomeArquivo += " "+$scope.registro.descricaoArquivo;
         
         // A partir daqui faz manipulação dos arquivos para enviar para o Google Drive e backup dos arquivos antigos
         // se houver.
@@ -673,10 +696,13 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
     };
     
     $scope.teste2 = function(){    
-        lmFiles.updateNameFiles(['0B7C12ldJ-VYWU0dpZS03Tnduc1E','0B7C12ldJ-VYWVzVEYndqMFJrUzg'],"Lol :)",function(status,data,message){
-            log(status);    
-            log(data);    
-            log(message);    
+        lmFiles.setFolderRaiz($scope.params.idPastaRaiz);
+        lmFiles.setPatchFolder("ADI I ARQ/ 01 ARQ ADI I Documentos/ 13 ARQ ADI I Habite-se e Operação");
+        
+        lmFiles.moveFiles(["https://drive.google.com/a/moontools.com.br/file/d/0B7C12ldJ-VYWX09HS2o0OXZ1dTg/edit"], function(status, data, message){
+            log(status);
+            log(data);
+            log(message);
         });
     };
   });
