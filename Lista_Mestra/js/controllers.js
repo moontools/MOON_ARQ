@@ -350,6 +350,11 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         $scope.opened = true;
     };    
     
+    $scope.updateMessageloading = function(message){
+        $scope.messageLoading = message;
+        $scope.$apply();
+    };
+    
     /*
      * Limpa o form após um envio
      * @returns {undefined}
@@ -390,7 +395,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 log("-> Dados salvos com sucesso!");
                 var dlg = dialogs.notify("Status",message);
                 dlg.result.then(function(){
-                    if($scope.registro.codigo)
+                    if($scope.edicao)
                         window.close(); 
                      _limpaForm();
                 });
@@ -506,38 +511,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 
                 // Insere um novo registro na planilha
                 googleSheet.insertRecord($scope.registro,verificaGrupoPranchas);
-            }else{
-                // Verifica se houve alteração no nome do arquivo 
-                if($scope.registro.nGrupoPranchas !== $scope.registroAntigo.nGrupoPranchas ||
-                   $scope.registro.codigoDoEntregavel !== $scope.registroAntigo.codigoDoEntregavel ||
-                   $scope.registro.blocos !== $scope.registroAntigo.blocos){
-                    $scope.spinerloading = "Renomeando arquivos...";
-                    var arrayFilesRename = [];
-                    angular.forEach(arrayArquivos,function(arquivo){
-                        if(arquivo.file)
-                            arrayFilesRename.push(arquivo.file);
-                    });
-                    log(arrayFilesRename);
-                    if(arrayFilesRename.length > 0){
-                        lmFiles.updateNameFiles(arrayFilesRename.slice(0),$scope.registro.nomeArquivo,function(status,data,message){;
-                            if(!status)
-                                return showError("Erro ao renomear arquivos! "+message);
-                            log($scope.registro.codigoDoEntregavel);
-                            log($scope.registroAntigo.codigoDoEntregavel);
-                            if($scope.registro.codigoDoEntregavel !== $scope.registroAntigo.codigoDoEntregavel){
-                                lmFiles.setFolderRaiz($scope.params.idPastaRaiz);
-                                lmFiles.setPatchFolder($scope.registro.localizacaoNoSistema);
-                                log(arrayFilesRename);
-                                lmFiles.moveFiles(arrayFilesRename, function(status, data, message){
-                                    log(status);
-                                    log(data);
-                                    log(message);
-                                });
-                            }
-                        });
-                    }   
-                }
-                                
+            }else{                               
                 $scope.messageLoading = "Atualizando dados na planilha..";
                 
                 // Remove as informaçõe que são geradas automaticamente por formulas na planilha
@@ -576,6 +550,46 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
             }else{
                 log("-> Upload de arquivos finalizado!");
                 gravaDadosPlanilha();
+            }
+        };
+        
+        renomeiaMoveArquivos = function(){
+            log("Verificando se houve alteração dos arquivos...");
+            // Verifica se houve alteração no nome do arquivo
+            if($scope.edicao && ($scope.registro.nGrupoPranchas !== $scope.registroAntigo.nGrupoPranchas ||
+               $scope.registro.codigoDoEntregavel !== $scope.registroAntigo.codigoDoEntregavel ||
+               $scope.registro.blocos !== $scope.registroAntigo.blocos)){
+                $scope.updateMessageloading("Renomeando arquivos...");
+                var arrayFilesRename = [];
+                angular.forEach(arrayArquivos,function(arquivo){
+                    if(typeof(arquivo.file) === 'string')
+                        arrayFilesRename.push(arquivo.file);
+                });
+                if(arrayFilesRename.length > 0){
+                    lmFiles.updateNameFiles(arrayFilesRename.slice(0),$scope.registro.nomeArquivo,function(status,data,message){;
+                        if(!status)
+                            return showError("Erro ao renomear arquivos! "+message);
+                        // Verifica se ouve alteração na localização do arquivo
+                        if($scope.registro.codigoDoEntregavel !== $scope.registroAntigo.codigoDoEntregavel){
+                            log("Atualizando pasta dos arquvivos...");
+                            $scope.updateMessageloading("Movendo arquivos...");
+                            $scope.$apply();
+                            lmFiles.setFolderRaiz($scope.params.idPastaRaiz);
+                            lmFiles.setPatchFolder($scope.registro.localizacaoNoSistema);
+                            lmFiles.moveFiles(arrayFilesRename, function(status, data, message){
+                                log("-> Pasta atualizada com sucesso!");
+                                log("Iniciando Upload de arquivos...");
+                                uploadFile(arrayArquivos.slice(0));
+                            });
+                        }else{
+                            log("Iniciando Upload de arquivos...");
+                            uploadFile(arrayArquivos.slice(0));  
+                        }  
+                    });
+                }
+            }else{
+                log("Iniciando Upload de arquivos...");
+                uploadFile(arrayArquivos.slice(0));
             }
         };
         
@@ -656,20 +670,19 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                arrFilesBackup.push($scope.params[arquivo.id]);
            }
            arquivo.file = $scope.registro[arquivo.id];
-        });
-                
-        if(arrFilesBackup.length > 0){
+        });   
+        
+        if($scope.edicao && arrFilesBackup.length > 0){
             $scope.messageLoading = "Efetuando backup dos arquivos antigos...";
-            lmFiles.makeBackupFiles(arrFilesBackup,$scope.params.idPastaBackup,function(status,data,message){
+            lmFiles.makeBackupFiles(arrFilesBackup.slice(0),$scope.params.idPastaBackup,function(status,data,message){
                 if(!status)
                     return showError(message);
-                log("Iniciando Upload de arquivos...");
-                uploadFile(arrayArquivos.slice(0));
+                renomeiaMoveArquivos();
             }); 
         }else{
-            log("Iniciando Upload de arquivos...");
-            uploadFile(arrayArquivos.slice(0)); 
-        }                                 
+            renomeiaMoveArquivos(); 
+        }
+        
     };
     /**
     * ************************************************************************************************
@@ -696,10 +709,12 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
     };
     
     $scope.teste2 = function(){    
+        
+        var folderBackup = "0B7C12ldJ-VYWfk5lS1RYNE5rMmVHQWdmcUJqQmwwanFfaWZjMUxPbjE0WUMxRFRiXzRobEk";
         lmFiles.setFolderRaiz($scope.params.idPastaRaiz);
         lmFiles.setPatchFolder("ADI I ARQ/ 01 ARQ ADI I Documentos/ 13 ARQ ADI I Habite-se e Operação");
         
-        lmFiles.moveFiles(["https://drive.google.com/a/moontools.com.br/file/d/0B7C12ldJ-VYWX09HS2o0OXZ1dTg/edit"], function(status, data, message){
+        lmFiles.makeBackupFiles(["https://drive.google.com/a/moontools.com.br/file/d/0B7C12ldJ-VYWUlFnYjVBWkd0Qlk/edit"],folderBackup,function(status, data, message){
             log(status);
             log(data);
             log(message);

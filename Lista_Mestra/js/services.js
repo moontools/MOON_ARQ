@@ -193,10 +193,9 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
                         log("-> Arquivo adicionado!");
                         var folderOrigem = null;
                         angular.forEach(fileInf.parents,function(parent){
-                           if(parent !== FolderDestinoId)
+                           if(parent.id !== FolderDestinoId)
                                folderOrigem = parent.id;
                         });
-                        log(folderOrigem);
                         if(folderOrigem){
                             log("Removendo o arquivo cujo id é "+id+" da pasta cujo id e é "+fileInf.parents[0].id);
                             mtlGdrive.removeFileFromFolder(folderOrigem,id,function(result){
