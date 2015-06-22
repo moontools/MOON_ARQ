@@ -146,6 +146,7 @@
                                 ng-class="{'spinner' : !params.projeto || (formListaMestra.projeto.$valid && !formListaMestra.projeto.$pristine && !params.complemento)}"
                                 ng-model="registro.projeto"
                                 ng-change="showComplementos()"
+                                ng-disabled="acao==='ADDPRANCHA'"
                                 required>
                             <option></option>
                         </select>
@@ -162,13 +163,14 @@
                                 ng-class="{'spinner' : !params.complemento || (formListaMestra.complemento.$valid && !formListaMestra.complemento.$pristine && !params.descricaoArquivo)}"
                                 ng-model="registro.complemento"
                                 ng-required="registro.complemento"
+                                ng-disabled="acao==='ADDPRANCHA'"
                                 ng-change="showDescricaoArquivos()">
                             <option></option>
                         </select>
                     </div> 
                     <!-- Fim Complemento -->
                     
-                    <!-- Detalhamento -->
+                    <!-- Descrição Arquivo -->
                     <div class="form-group animated" ng-class="{'fadeIn' : params.descricaoArquivo.length > 0}" ng-show="params.descricaoArquivo.length > 0" ng-class="{ 'has-error' : formListaMestra.descricaoArquivo.$invalid && !formListaMestra.descricaoArquivo.$pristine}">      
                         <label class="control-label">Descrição arquivo </label>
                         <small class="help-block" ng-show="formListaMestra.descricaoArquivo.$invalid && !formListaMestra.descricaoArquivo.$pristine">Selecione uma descrição</small>
@@ -176,12 +178,13 @@
                                 ng-options="descricaoArquivo as descricaoArquivo for descricaoArquivo in params.descricaoArquivo"
                                 class="form-control"
                                 ng-class="{'spinner' : !params.descricaoArquivo}"
-                                ng-model="registro.descricaoArquivo" 
+                                ng-model="registro.descricaoArquivo"
+                                ng-disabled="acao==='ADDPRANCHA'"
                                 ng-required = "params.descricaoArquivo.length > 0">
                             <option></option>
                         </select>
                     </div> 
-                    <!-- Fim Detalhamento -->
+                    <!-- Fim Descrição Arquivo -->
                     
                     <!--Outro Detalhamento-->
                     <div class="form-group animated" ng-class="{'fadeIn' : registro.descricaoArquivo == 'OUTRO'}" ng-show="registro.descricaoArquivo == 'OUTRO'" ng-class="{ 'has-error' : formListaMestra.outraDescricaoArquivo.$invalid && !formListaMestra.outraDescricaoArquivo.$pristine}">
@@ -191,6 +194,7 @@
                                name="outraDescricaoArquivo"
                                class="form-control" 
                                ng-model="registro.outraDescricaoArquivo"
+                               ng-disabled="acao==='ADDPRANCHA'"
                                ng-required="registro.descricaoArquivo == 'OUTRO'">
                     </div>
                     <!--FIM Outro Detalhamento-->
@@ -204,6 +208,7 @@
                                class="form-control" 
                                ng-model="registro.nGrupoPranchas"
                                capitalize
+                               ng-disabled="acao==='ADDPRANCHA'"
                                ng-required="registro.nGrupoPranchas || registro.numeroPrancha">
                     </div> 
                     <!-- Fim Número Grupo PranchaS -->
@@ -243,6 +248,7 @@
                                 class="form-control"
                                 ng-class="{'spinner' : !params.responsavelTecnico}"
                                 ng-model="registro.responsavelTecnico" 
+                                ng-disabled="acao==='ADDPRANCHA'"
                                 required>
                             <option></option>
                         </select>
