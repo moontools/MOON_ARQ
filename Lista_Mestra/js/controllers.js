@@ -9,6 +9,7 @@
  * @param {object} googleSheet Objeto para manipulação de dados de uma planilha do google
  * @param {object} dialogs Objeto para exibição de mensagens de dialogo
  * @param {object} lmFiles objeto responsáveis por manipular os arquivos do formulário
+ * @param {object} lmNotificacao Objeto para notificações da Lista Mestra
  * @param {object} util Objeto com funções utilitárias
  * @param {object} acessos Permite a validação do acesso dos usuários
  * @param {object} config Variáries globais de configuração da aplicação
@@ -128,7 +129,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 // Verifica se o formulário foi carregado para edição de um registro
                 if($scope.acao === "UPDATE" || $scope.acao === "ADDPRANCHA"){
                     carregaDadosRegistro();
-                    log("Carregando dados de um registro...");
+                    log("Carregando dados do registro de código: "+$scope.registro.codigo+"...");
                 }else{
                     $scope.spinerloading = false;
                 }
@@ -219,7 +220,10 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
      * ************************************************************************************************
      * FIM Carregamento dos parâmetros
      **/
-
+    
+    /*
+     * Executa alterações no formulário necessárias para uma atualização
+     */
     preparaFormUpdate = function(){
 
         // Manipula as informações sobre os arquivos
@@ -233,6 +237,9 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         $scope.registro.comprovantePagamento = null;
     };
     
+    /*
+     * xecuta alterações no formulário necessárias para adição de uma prancha
+     */
     preparaFormAddPrancha = function(){
         $scope.registro.numeroPrancha = parseInt(util.QueryString.numeroPrancha)+1;
         $scope.registro.codigo = "";
@@ -249,7 +256,6 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
      */
     carregaDadosRegistro = function(){
         $scope.messageLoading = "Carregando dados...";
-        log($scope.registro.codigo);
         googleSheet.setSpreadSheetId($scope.params.idPlanilha);
         googleSheet.setSheetName($scope.params.nomePagina);
             $timeout(function(){
@@ -438,6 +444,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
     */
     atualizaLinkEditavel = function(regParaAtualizar,message){
         $scope.messageLoading = "Atualizando links do grupo de pranchas...";
+        log("Atualizando links do grupo de pranchas registro código: "+regParaAtualizar[0].codigo+"...");
         regParaAtualizar[0].revisao++;
         regParaAtualizar[0].arquivoEditavel = $scope.registro.arquivoEditavel;
         regParaAtualizar[0].dataDocumento = $filter('date')(new Date(regParaAtualizar[0].dataDocumento),'yyyy-MM-dd');
@@ -445,10 +452,11 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         delete regParaAtualizar[0].linha;
         delete regParaAtualizar[0].adicionar;
         delete regParaAtualizar[0].adicionarPrancha;
+        delete regParaAtualizar[0][" feito"];
         googleSheet.updateRecord(regParaAtualizar[0],"linha",linha,"Histórico Revisões",function(data, status, message2){
             if(!status)
                 return showError(message2);
-
+            log("-> Registro atualizado com sucesso!");
             regParaAtualizar.shift();
             if(regParaAtualizar.length>0){
                 atualizaLinkEditavel(regParaAtualizar,message);
@@ -465,9 +473,6 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
     * @param {string} message Mensagem de retorno 
     */
     verificaGrupoPranchas = function(data, status, message){
-        log(data);
-        log(status);
-        log(message);
         log("-> Dados gravados com sucesso!");
         var linhaRegAtual = data.linha;
         $scope.registro.codigo = data.codigo;
@@ -531,7 +536,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 delete $scope.registro.linha;
                 delete $scope.registro.adicionar;
                 delete $scope.registro.adicionarPrancha;
-                delete $scope.registro.feito;  
+                delete $scope.registro[" feito"];  
                 // Incremente a revisão do arquivo;
                 if($scope.inseriuNovoArquivo)
                     $scope.registro.revisao++;
@@ -539,15 +544,15 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 googleSheet.updateRecord($scope.registro,"Código",$scope.registro.codigo,'Histórico Revisões',verificaGrupoPranchas);
                 break;
             case "ADDPRANCHA" :
-                $scope.messageLoading = "Gravando dados na planilha..";
+                $scope.messageLoading = "Gravando dados na planilha...";
                 // Remove as informaçõe que são geradas automaticamente por formulas na planilha
                 delete $scope.registro.linha;
                 delete $scope.registro.adicionar;               
                 delete $scope.registro.adicionarPrancha;               
-                delete $scope.registro.feito;
+                delete $scope.registro[" feito"];
                 // Incremente a revisão do arquivo;
                 $scope.registro.revisao++;
-                // Insere um novo registro na plan
+                // Insere um novo registro na planilha
                 googleSheet.insertRecord($scope.registro,verificaGrupoPranchas);
                 break;
         }
