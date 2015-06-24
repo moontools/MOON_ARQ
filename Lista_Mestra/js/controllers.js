@@ -677,14 +677,16 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         }
         
         // Faz o tratamento da informação Detalhamento
-        if($scope.registro.descricaoArquivo === 'OUTRO')
+        if($scope.registro.descricaoArquivo === 'OUTRO'){
+            var auxDescArq = $scope.registro.descricaoArquivo;
             $scope.registro.descricaoArquivo = $scope.registro.outraDescricaoArquivo;
+        }
         delete $scope.registro.outraDescricaoArquivo;
         
         // Busca pelas configurações dos níveis de gestão
         $scope.registro.codigoDoEntregavel = $scope.registro.projeto;
         $scope.registro.codigoDoEntregavel += ($scope.registro.complemento ? " "+$scope.registro.complemento : "");
-        $scope.registro.codigoDoEntregavel += ($scope.registro.descricaoArquivo ? " "+$scope.registro.descricaoArquivo : "");
+        $scope.registro.codigoDoEntregavel += ($scope.registro.descricaoArquivo && $scope.params.descricaoArquivo.indexOf("OUTRO") < 0 ? " "+$scope.registro.descricaoArquivo : "");
         $scope.registro.localizacaoNoSistema = "";
         for(var i = 0; i < $scope.params.configArquivos.length; i++){
             if($scope.params.configArquivos[i].entregaveis === $scope.registro.codigoDoEntregavel){
@@ -694,8 +696,6 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 break;
             }
         }
-        
-        log($scope.registro.codigoDoEntregavel);
         
         // Verifica se existe uma localização válida para salvar os arquivos
         if(!$scope.registro.localizacaoNoSistema)
