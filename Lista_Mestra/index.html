@@ -198,7 +198,7 @@
                                ng-model="registro.nGrupoPranchas"
                                capitalize
                                ng-disabled="acao==='ADDPRANCHA'"
-                               ng-required="registro.nGrupoPranchas || registro.numeroPrancha">
+                               ng-required="registro.nGrupoPranchas">
                     </div> 
                     <!-- Fim Número Grupo PranchaS -->
                     
@@ -362,9 +362,21 @@
                                class="form-control"
                                fileread="registro.arquivoPdf"
                                ng-model="registro.arquivoPdf"
-                               ng-required="!registro.codigo || registro.arquivoEditavel || registro.arquivoPdf"/>
+                               ng-required="(!registro.codigo || registro.arquivoEditavel || registro.arquivoPdf) && !registro.linkGoogleDrive"/>
                     </div>
                     <!-- Fim Arquivo PDF -->
+                    
+                    <!-- Link Drive -->
+                    <div class="form-group">      
+                        <label class="control-label">Link Google Drive </label>
+                        <small></small>
+                        <input type="text"
+                               placeholder="Insira o link do Google Drive caso exista"
+                               class="form-control" 
+                               ng-model="registro.linkGoogleDrive"
+                               ng-required="!registro.arquivoPdf || registro.linkGoogleDrive">
+                    </div> 
+                    <!-- Fim Link Drive -->
                     
                     <!-- Valor pagamento -->
                     <div class="form-group"> 
@@ -378,8 +390,7 @@
                                ng-model="registro.valorPagamento"
                                ng-required="registro.valorPagamento || registro.comprovantePagamento" >
                     </div> 
-                    <!-- Fim Valor pagamento -->
-                    
+                    <!-- Fim Valor pagamento -->                    
                     
                     <!-- Comprovante pagamento -->
                     <div class="form-group">      
