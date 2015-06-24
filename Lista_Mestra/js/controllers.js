@@ -170,7 +170,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
 
         // Carrega as configurações de localização de arquivos
         googleSheet.setSheetName(config.sheetParamsFiles);
-        googleSheet.getColumnData(['entregaveis','localizacaoNoSistema','codigoEtapa','etapaFinalCronograma'],'associativeArray',function(data, status, message){
+        googleSheet.getColumnData(['entregaveis','dataNomeArquivo','localizacaoNoSistema','codigoEtapa','etapaFinalCronograma'],'associativeArray',function(data, status, message){
             $scope.params.configArquivos = status ? data : showError(message);
         });
 
@@ -693,6 +693,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 $scope.registro.localizacaoNoSistema = $scope.params.configArquivos[i].localizacaoNoSistema.replace(/{%EMP%}/g, $scope.registro.empreendimento);
                 $scope.registro.codigoEtapa = $scope.params.configArquivos[i].codigoEtapa;
                 $scope.registro.etapaFinalCronograma = $scope.params.configArquivos[i].etapaFinalCronograma;
+                $scope.params.dataNomeArquivo = $scope.params.configArquivos[i].dataNomeArquivo;
                 break;
             }
         }
@@ -711,6 +712,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         $scope.registro.nomeArquivo += $scope.registro.blocos? " BLOCOS "+$scope.registro.blocos : "";
         $scope.registro.nomeArquivo += $scope.registro.numeroPrancha? " "+$scope.registro.numeroPrancha : "";
         $scope.registro.nomeArquivo += " "+$scope.registro.descricaoArquivo;
+        $scope.registro.nomeArquivo += $scope.params.dataNomeArquivo === "SIM" ? " "+$filter('date')($scope.registro.dataDocumento,'dd/MM/yyyy') : "";
         
         // A partir daqui faz manipulação dos arquivos para enviar para o Google Drive e backup dos arquivos antigos
         // se houver.
