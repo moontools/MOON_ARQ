@@ -1,52 +1,6 @@
-
-/*---------------------------*/
-/*--------Change Order--------*/
-/*---------------------------*/
-
-
-/*body {
-    max-width:800px;
-    margin:0px auto;
-    font-family: arial, helvetica;
-}*/
-/* h3{
-    margin: 25px 0px 0px 20px;
-    background: #FFF;
-    display: inline-block;
-    padding: 0px 7px;
-    font-size: 24px;
-}
-
-.form_moon .form-group-medio{
-    max-width:300px;
-}
-
-.chekbox-change-order label{
-    margin-right:20px;
-}*/
-
-/*.chekbox-change-order label:last-child{
-    margin-right:0 !important;
-}*/
-
-/*.ajustHoverRemoveFocus{
-	right: 25px;
-	position: absolute;
-	top: 0px;
-}*/
-
-/*.spinner {
-	position: absolute;
-	right: 38px;
-	top: 32px;
-	width: 18px;
-	height: 18px;
-	background: url(https://googledrive.com/host/0B7C12ldJ-VYWLUw3Unl4d1NPcUk/loading.gif) center center no-repeat;
-	background-size: contain;
-	z-index: 2;
-	display: block;
-}*/
-
+/*
+* Ajustes na formatação dos inputs
+*/
 input:required, textarea:required{
     background: #fff url(https://googledrive.com/host/0B7C12ldJ-VYWLUw3Unl4d1NPcUk/red_asterisk.png) no-repeat center right 8px;
 }
@@ -146,10 +100,6 @@ textarea{
 	margin-top: 0px !important;
 }
 
-#enviar {
-    float : right;
-}
-
 
 div .msgBox{
     top : 200px;
@@ -193,22 +143,9 @@ input{
     margin-top: -12px;	
 }
 
-.session{
-  padding-top: 20px;
-  margin-bottom: 30px ;
-  color: #2c3e50;
-  border-top: 1px solid #808080;
-  border-bottom: 1px solid #808080;
-}
-
-/*.animation {
-    opacity: 1;
-}
-
-.animation.ng-hide {
-    opacity: 0;
-}*/
-
+/*
+* Animações dos Inputs
+*/
 .animated { 
     -webkit-animation-duration: 2s; 
     animation-duration: 2s; 

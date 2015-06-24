@@ -60,7 +60,7 @@
             
             <small class='required_notification'>* Campos obrigatórios</small>
             <!-- Inicio Inputs -->
-            <form name="formListaMestra" novalidate ng-submit="salvar()" >
+            <form name="formListaMestra" ng-submit="salvar()" >
                                                            
                     <!-- Email -->
                     <div class="form-group" ng-class="{ 'has-error' : formListaMestra.usuario.$invalid || !params.acesso}">      
@@ -429,9 +429,12 @@
                     <!-- Botão Salvar -->
                     <div class="form-group">
                         <label class="control-label"></label>
-                            <button type="submit" class="btn btn-primary" ng-disabled="formListaMestra.$invalid" >
+                            <button type="submit" class="btn btn-primary" ng-disabled="!params.acesso">
                                 Salvar
-                            </button>                        
+                            </button>
+<!--                            <button type="submit" class="btn btn-primary" ng-disabled="formListaMestra.$invalid">
+                                Salvar
+                            </button>-->
                     </div>
                     <!-- Fim Botão Salvar -->
                     
