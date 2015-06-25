@@ -371,10 +371,14 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         $scope.$apply();
     };
     
+    /*
+     * Remove um arquivo da Lista Mestra
+     */
     $scope.removeFile = function(file){
         dialogs.confirm("Atenção","Deseja realmente remover o arquivo?")
         .result.then(function(btn){
-             $scope.params[file] = "";
+            $scope.arrayFilesBackup.push($scope.params[file]);
+            $scope.params[file] = "";
         },function(btn){
                 
         }); 
@@ -546,7 +550,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 delete $scope.registro.adicionar;
                 delete $scope.registro.adicionarPrancha;
                 delete $scope.registro[" feito"];  
-                // Incremente a revisão do arquivo;
+                // Incrementa a revisão do arquivo;
                 if($scope.inseriuNovoArquivo)
                     $scope.registro.revisao++;
                 // Atualiza um registro na planilha
@@ -629,7 +633,6 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                     if($scope.registro.codigoDoEntregavel !== $scope.registroAntigo.codigoDoEntregavel){
                         log("Atualizando pasta dos arquvivos...");
                         $scope.updateMessageloading("Movendo arquivos...");
-                        $scope.$apply();
                         lmFiles.setFolderRaiz($scope.params.idPastaRaiz);
                         lmFiles.setPatchFolder($scope.registro.localizacaoNoSistema);
                         lmFiles.moveFiles(arrayFilesRename, function(status, data, message){
@@ -728,8 +731,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         $scope.auxArquivoEditavel = $scope.registro.arquivoEditavel,
         $scope.auxArquivoImpressao = $scope.registro.arquivoImpressao,
         $scope.$scopeauxArquivoPdf = $scope.registro.arquivoPdf;
-    
-        var arrFilesBackup= [];       
+         
         var arrayArquivos = 
             [{id : "arquivoEditavel",description:"Arquivo Editável", file: null},
             {id : "arquivoImpressao",description:"Arquivo Impressão", file: null},
@@ -737,18 +739,36 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
             {id : "comprovantePagamento",description:"Comprovante Pagamento", file:null}];
         
         angular.forEach(arrayArquivos,function(arquivo){
+            // Se não foi carregado um novo arquivo mantém o arquivo antigo
             if(!$scope.registro[arquivo.id]){
                 $scope.registro[arquivo.id] = $scope.params[arquivo.id];
+            // Se foi carregado um novo arquivo adiciona o antigo ao array de backup
             }else if($scope.params[arquivo.id]){
-                arrFilesBackup.push($scope.params[arquivo.id]);
+                $scope.arrayFilesBackup.push($scope.params[arquivo.id]);
             }
             arquivo.file = $scope.registro[arquivo.id];
         });   
         
+        // Verifica qual o tipo de ação NEW, ADDPRANCHA OU UPDATE
         if($scope.acao === "NEW" || $scope.acao === "ADDPRANCHA"){
-            uploadFile(arrayArquivos.slice(0));
+            // Chama função que irá verificar se precisa fazer upload de arquivos
+            uploadFile(arrayArquivos.slice(0));            
         }else{
-            renomeiaMoveArquivos(arrayArquivos);
+            // Verifica se precisa fazer backup de arquivos antigos
+            if($scope.arrayFilesBackup.length > 0){
+                log("Efetuando backup dos arquivos...");
+                $scope.messageLoading = "Efetuando backup dos arquivos antigos...";
+                lmFiles.makeBackupFiles($scope.arrayFilesBackup,$scope.params.idPastaBackup,function(status,data,message){
+                    if(!status)
+                        return showError(message);
+                    log("-> Backup efetuado com sucesso!");
+                    // Chama função que verifica se precisa renomear os arquivos
+                    renomeiaMoveArquivos(arrayArquivos);
+                });
+            }else{
+                // Chama função que verifica se precisa renomear os arquivos
+                renomeiaMoveArquivos(arrayArquivos);
+            }
         } 
         
     };
@@ -767,9 +787,10 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
     $scope.registro = new Object();
     $scope.params = new Object();
     $scope.buttons = new Object();
+    $scope.arrayFilesBackup = [];
     
     if(!util.QueryString.acao || !util.QueryString.empreendimento)
-        return showError("Parâmetros ação ou Empreendimento não identificado!");
+        return showError("Parâmetros 'acao' ou 'empreendimento' não identificado!");
     
     // Pega os parâmetros da URL
     $scope.acao = util.QueryString.acao.toUpperCase();
@@ -783,16 +804,16 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
             
         case "UPDATE":
             if(!util.QueryString.codigo)
-                return showError("Parâmetro código não identificado!");
+                return showError("Parâmetro 'codigo' não identificado!");
             $scope.registro.codigo = util.QueryString.codigo;
             carregaParametrosIniciais();
             break;
             
         case "ADDPRANCHA":
             if(!util.QueryString.codigo)
-                return showError("Parâmetro código não identificado!");
+                return showError("Parâmetro 'codigo' não identificado!");
             if(!util.QueryString.nGrupoPranchas)
-                return showError("Parâmetro número do grupo de pranchas não identificado!");
+                return showError("Parâmetro 'nGrupoPranchas' não identificado!");
             $scope.registro.codigo = util.QueryString.codigo;
             $scope.registro.nGrupoPranchas = util.QueryString.nGrupoPranchas;
             //$scope.registro.numeroPrancha = util.QueryString.numeroPrancha + 1;
