@@ -371,6 +371,15 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         $scope.$apply();
     };
     
+    $scope.removeFile = function(file){
+        dialogs.confirm("Atenção","Deseja realmente remover o arquivo?")
+        .result.then(function(btn){
+             $scope.params[file] = "";
+        },function(btn){
+                
+        }); 
+    };
+    
     /*
      * Limpa o form após um envio
      * @returns {undefined}

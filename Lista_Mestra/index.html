@@ -90,7 +90,7 @@
                     
                     <!-- Revisão documento -->
                     <div class="form-group">      
-                        <label class="control-label">Revisão documento </label>
+                        <label class="control-label">Revisão documento</label>
                         <small class="help-block"></small>
                         <input type="text"
                                name="revisao"
@@ -151,7 +151,7 @@
                                 class="form-control"
                                 ng-class="{'spinner' : !params.complemento || (formListaMestra.complemento.$valid && !formListaMestra.complemento.$pristine && !params.descricaoArquivo)}"
                                 ng-model="registro.complemento"
-                                ng-required="registro.complemento"
+                                ng-required="registro.complemento || params.complemento.length > 0"
                                 ng-disabled="acao==='ADDPRANCHA'"
                                 ng-change="showDescricaoArquivos()">
                             <option></option>
@@ -319,9 +319,10 @@
                     <div class="form-group">      
                         <label class=" control-label">Arquivo editável </label>
                         </br>
-                        <small class="help-block" ng-show="registro.codigo && params.arquivoEditavel">                        
+                        <small class="help-block" ng-show="registro.codigo && params.arquivoEditavel">       
+                            Link do atual documento:<br/>
                             <a href="{{params.arquivoEditavel}}" target="_blank">{{registro.nomeArquivo}}</a>
-                            -> Link do atual documento.
+                            <button style="margin: -6px 0px 0px 2px;" type="button" ng-click="removeFile('arquivoEditavel')" class="btn btn-danger btn-xs glyphicon glyphicon-minus"></button>
                         </small>
                         <input type="file"
                                name="arquivoEditavel"
@@ -337,9 +338,10 @@
                     <!-- Arquivo Impressão -->
                     <div class="form-group">      
                         <label class="control-label">Arquivo impressão </label>
-                        <small class="help-block" ng-show="registro.codigo && params.arquivoImpressao">                        
+                        <small class="help-block" ng-show="registro.codigo && params.arquivoImpressao"> 
+                            Link do atual documento:<br/>
                             <a href="{{params.arquivoImpressao}}" target="_blank">{{registro.nomeArquivo}}</a>
-                            -> Link do atual documento.
+                            <button style="margin: -6px 0px 0px 2px;" type="button" ng-click="removeFile('arquivoImpressao')" class="btn btn-danger btn-xs glyphicon glyphicon-minus"></button>
                         </small>
                         <input type="file"
                                name="arquivoImpressao"
@@ -353,28 +355,29 @@
                     <!-- Arquivo PDF -->
                     <div class="form-group">      
                         <label class=" control-label">Arquivo PDF </label>
-                        <small class="help-block" ng-show="registro.codigo && params.arquivoPdf">                        
+                        <small class="help-block" ng-show="registro.codigo && params.arquivoPdf">  
+                            Link do atual documento:<br/>
                             <a href="{{params.arquivoPdf}}" target="_blank">{{registro.nomeArquivo}}</a>
-                            -> Link do atual documento.
+                            <button style="margin: -6px 0px 0px 2px;" type="button" ng-click="removeFile('arquivoPdf')" class="btn btn-danger btn-xs glyphicon glyphicon-minus"></button>
                         </small>
                         <input type="file"
                                name="arquivoPdf"
                                class="form-control"
                                fileread="registro.arquivoPdf"
                                ng-model="registro.arquivoPdf"
-                               ng-required="(!registro.codigo || registro.arquivoEditavel || registro.arquivoPdf) && !registro.linkGoogleDrive"/>
+                               ng-required="!params.arquivoPdf && (registro.arquivoEditavel || registro.arquivoPdf || !registro.linkGoogleDrive)"/>
                     </div>
                     <!-- Fim Arquivo PDF -->
                     
                     <!-- Link Drive -->
-                    <div class="form-group">      
+                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.linkDrive.$invalid && !formListaMestra.linkDrive.$pristine}">      
                         <label class="control-label">Link Google Drive </label>
                         <small></small>
                         <input type="text"
                                placeholder="Insira o link do Google Drive caso exista"
                                class="form-control" 
                                ng-model="registro.linkGoogleDrive"
-                               ng-required="!registro.arquivoPdf || registro.linkGoogleDrive">
+                               ng-required="registro.linkGoogleDrive">
                     </div> 
                     <!-- Fim Link Drive -->
                     
@@ -396,15 +399,16 @@
                     <div class="form-group">      
                         <label class=" control-label">Comprovante pagamento </label>
                         <small class="help-block" ng-show="registro.codigo && params.comprovantePagamento">
+                            Link do atual documento:<br/>
                             <a href="{{params.comprovantePagamento}}" target="_blank">{{registro.nomeArquivo}}</a>
-                            -> Link do atual documento.
+                            <button style="margin: -6px 0px 0px 2px;" type="button" ng-click="removeFile('comprovantePagamento')" class="btn btn-danger btn-xs glyphicon glyphicon-minus"></button>
                         </small>
                         <input type="file"
                                name="comprovantePagamento"
                                class="form-control"
                                fileread="registro.comprovantePagamento"
                                ng-model="registro.comprovantePagamento"
-                               ng-required="!registro.codigo && registro.valorPagamento"/>
+                               ng-required="!params.comprovantePagamento && registro.valorPagamento"/>
                     </div>
                     <!-- Comprovante pagamento -->
                     
