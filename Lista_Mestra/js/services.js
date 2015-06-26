@@ -156,17 +156,23 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
      * Envia o arquivo para o Google Drive
      * @params {array} parents Array com os ids das pastas onde o arquivo deverá ser inserido;
      */
-    var saveFile = function(parents){
+    var saveFile = function(parents,tentativas){
+        tentativas = !tentativas ? 1 : ++tentativas;
         log("Vou inserir o arquivo "+fileData+"...");
         if(!fileData)
             return error("Tentativa de upload de arquivo inválido.");
-        mtlGdrive.insertFile(fileData,titleFile,parents,function(result){
-            if(result.error)
-                return error(result.error.message);
-            log("-> Arquivo inserido!");
-            linkArquivo = result.alternateLink;
-            status = true;
-            processing = false;
+        mtlGdrive.insertFile(fileData,titleFile,parents,function(result){  
+            if(result.error && tentativas <= 10){
+                log("-> Deu erro mas vou tentar novamente pela "+tentativas+"º vez...");
+               $timeout(function(){saveFile(parents,tentativas);},5000);
+            }else if(result.error){
+               return error(result.error.message);
+            }else{
+                log("-> Arquivo inserido!");
+                linkArquivo = result.alternateLink;
+                status = true;
+                processing = false;
+            }
         });
     };
     

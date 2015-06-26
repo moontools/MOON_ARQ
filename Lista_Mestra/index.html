@@ -22,7 +22,7 @@
         
         <!--Bibliotécas JS-->
         <script src="../bower_components/angular/angular.min.js" type="text/javascript"></script>
-        <script src="../bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js" type="text/javascript"></script> 
+        <script src="../bower_components/angular-bootstrap/ui-bootstrap-tpls.js" type="text/javascript"></script> 
         <script src="../bower_components/angular-bootstrap-toggle-switch/angular-toggle-switch.js" type="text/javascript"></script>
         <script src="../bower_components/angular-sanitize/angular-sanitize.min.js"></script>
         <script src="../bower_components/angular-translate/angular-translate.min.js "></script>
@@ -126,15 +126,15 @@
                     <!-- Fim Empreendimento -->  
                     
                     <!-- Projeto -->
-                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.projeto.$invalid && !formListaMestra.projeto.$pristine}">      
-                        <label class=" control-label">Projeto </label>
-                        <small class="help-block" ng-show="formListaMestra.projeto.$invalid && !formListaMestra.projeto.$pristine">Selecione um projeto</small>
-                        <select name="projeto"
-                                ng-options="projeto[0] as projeto[0] for projeto in params.projeto"
+                    <div class="form-group" ng-class="{ 'has-error' : formListaMestra.categoria.$invalid && !formListaMestra.categoria.$pristine}">      
+                        <label class=" control-label">Categoria </label>
+                        <small class="help-block" ng-show="formListaMestra.categoria.$invalid && !formListaMestra.categoria.$pristine">Selecione uma categoria</small>
+                        <select name="categoria"
+                                ng-options="categoria[0] as categoria[0] for categoria in params.categoria"
                                 class="form-control"
-                                ng-class="{'spinner' : !params.projeto || (formListaMestra.projeto.$valid && !formListaMestra.projeto.$pristine && !params.complemento)}"
-                                ng-model="registro.projeto"
-                                ng-change="showComplementos()"
+                                ng-class="{'spinner' : !params.categoria || (formListaMestra.categoria.$valid && !formListaMestra.categoria.$pristine && !params.arquivo)}"
+                                ng-model="registro.categoria"
+                                ng-change="showArquivos()"
                                 ng-disabled="acao==='ADDPRANCHA'"
                                 required>
                             <option></option>
@@ -142,49 +142,49 @@
                     </div> 
                     <!-- Fim Projeto -->
                     
-                    <!-- Complemento -->
-                    <div class="form-group animated" ng-class="{'fadeIn' : params.complemento.length > 0}" ng-show="params.complemento.length > 0" ng-class="{ 'has-error' : formListaMestra.complemento.$invalid && !formListaMestra.complemento.$pristine}">      
-                        <label class="control-label">Complemento </label>
-                        <small class="help-block" ng-show="formListaMestra.complemento.$invalid && !formListaMestra.complemento.$pristine">Selecione um complemento</small>
-                        <select name="complemento"
-                                ng-options="complemento as complemento for complemento in params.complemento"
+                    <!-- Arquivo -->
+                    <div class="form-group animated" ng-class="{'fadeIn' : params.arquivo.length > 0}" ng-show="params.arquivo.length > 0" ng-class="{ 'has-error' : formListaMestra.arquivo.$invalid && !formListaMestra.arquivo.$pristine}">      
+                        <label class="control-label">Arquivo </label>
+                        <small class="help-block" ng-show="formListaMestra.arquivo.$invalid && !formListaMestra.arquivo.$pristine">Selecione um arquivo</small>
+                        <select name="arquivo"
+                                ng-options="arquivo as arquivo for arquivo in params.arquivo"
                                 class="form-control"
-                                ng-class="{'spinner' : !params.complemento || (formListaMestra.complemento.$valid && !formListaMestra.complemento.$pristine && !params.descricaoArquivo)}"
-                                ng-model="registro.complemento"
-                                ng-required="registro.complemento || params.complemento.length > 0"
+                                ng-class="{'spinner' : !params.arquivo || (formListaMestra.arquivo.$valid && !formListaMestra.arquivo.$pristine && !params.descricao)}"
+                                ng-model="registro.arquivo"
+                                ng-required="registro.arquivo || params.arquivo.length > 0"
                                 ng-disabled="acao==='ADDPRANCHA'"
-                                ng-change="showDescricaoArquivos()">
+                                ng-change="showDescricao()">
                             <option></option>
                         </select>
                     </div> 
-                    <!-- Fim Complemento -->
+                    <!-- Fim Arquivo -->
                     
-                    <!-- Descrição Arquivo -->
-                    <div class="form-group animated" ng-class="{'fadeIn' : params.descricaoArquivo.length > 0}" ng-show="params.descricaoArquivo.length > 0" ng-class="{ 'has-error' : formListaMestra.descricaoArquivo.$invalid && !formListaMestra.descricaoArquivo.$pristine}">      
-                        <label class="control-label">Descrição arquivo </label>
-                        <small class="help-block" ng-show="formListaMestra.descricaoArquivo.$invalid && !formListaMestra.descricaoArquivo.$pristine">Selecione uma descrição</small>
-                        <select name="descricaoArquivo"
-                                ng-options="descricaoArquivo as descricaoArquivo for descricaoArquivo in params.descricaoArquivo"
+                    <!-- Descrição -->
+                    <div class="form-group animated" ng-class="{'fadeIn' : params.descricao.length > 0}" ng-show="params.descricao.length > 0" ng-class="{ 'has-error' : formListaMestra.descricao.$invalid && !formListaMestra.descricao.$pristine}">      
+                        <label class="control-label">Descrição </label>
+                        <small class="help-block" ng-show="formListaMestra.descricao.$invalid && !formListaMestra.descricao.$pristine">Selecione uma descrição</small>
+                        <select name="descricao"
+                                ng-options="descricao as descricao for descricao in params.descricao"
                                 class="form-control"
-                                ng-class="{'spinner' : !params.descricaoArquivo}"
-                                ng-model="registro.descricaoArquivo"
-                                ng-required = "params.descricaoArquivo.length > 0">
+                                ng-class="{'spinner' : !params.descricao}"
+                                ng-model="registro.descricao"
+                                ng-required = "params.descricao.length > 0">
                             <option></option>
                         </select>
                     </div> 
-                    <!-- Fim Descrição Arquivo -->
+                    <!-- Fim Descrição -->
                     
-                    <!--Outro Detalhamento-->
-                    <div class="form-group animated" ng-class="{'fadeIn' : registro.descricaoArquivo == 'OUTRO'}" ng-show="registro.descricaoArquivo == 'OUTRO'" ng-class="{ 'has-error' : formListaMestra.outraDescricaoArquivo.$invalid && !formListaMestra.outraDescricaoArquivo.$pristine}">
+                    <!--Outra descrição arquivo-->
+                    <div class="form-group animated" ng-class="{'fadeIn' : registro.descricao == 'OUTRO'}" ng-show="registro.descricao == 'OUTRO'" ng-class="{ 'has-error' : formListaMestra.outraDescricaoArquivo.$invalid && !formListaMestra.outraDescricaoArquivo.$pristine}">
                         <label class="control-label">Insira a descrição do arquivo</label>
                         <input type="text"
                                capitalize
                                name="outraDescricaoArquivo"
                                class="form-control" 
                                ng-model="registro.outraDescricaoArquivo"
-                               ng-required="registro.descricaoArquivo == 'OUTRO'">
+                               ng-required="registro.descricao == 'OUTRO'">
                     </div>
-                    <!--FIM Outro Detalhamento-->
+                    <!--FIM Outra descrição arquivo--->
                     
                     <!-- Número Grupo Prancha -->
                     <div class="form-group">      
@@ -249,8 +249,9 @@
                         <p class="input-group">
                             <input type="text" 
                                    class="form-control" 
+                                   formatteddate="registro.dataDocumento"
                                    datepicker-popup="dd/MM/yyyy"
-                                   value="{{registro.dataDocumento | date:dd/MM/yyyy}}"
+                                   ng-keyup="converDate()"
                                    ng-model="registro.dataDocumento"
                                    show-weeks="false"
                                    is-open="opened" 
@@ -317,18 +318,18 @@
                     <div class="form-group">      
                         <label class=" control-label">Arquivo editável </label>
                         </br>
-                        <small class="help-block" ng-show="registro.codigo && params.arquivoEditavel">       
+                        <small class="help-block" ng-show="params.arquivoEditavel">       
                             Link do atual documento:<br/>
                             <a href="{{params.arquivoEditavel}}" target="_blank">{{registro.nomeArquivo}}</a>
-                            <button style="margin: -6px 0px 0px 2px;" type="button" ng-click="removeFile('arquivoEditavel')" class="btn btn-danger btn-xs glyphicon glyphicon-minus"></button>
+                            <button ng-disabled="acao=='ADDPRANCHA'" style="margin: -6px 0px 0px 2px;" type="button" ng-click="removeFile('arquivoEditavel')" class="btn btn-danger btn-xs glyphicon glyphicon-minus"></button>
                         </small>
                         <input type="file"
                                name="arquivoEditavel"
-                               ng-change="changeFile()"
                                class="form-control" 
                                fileread="registro.arquivoEditavel"
                                ng-model="registro.arquivoEditavel"
-                               ng-required="(!registro.codigo && registro.nGrupoPranchas) || registro.arquivoEditavel || registro.arquivoImpressao"/>
+                               ng-disabled="acao=='ADDPRANCHA'"
+                               ng-required="(!params.arquivoEditavel && registro.nGrupoPranchas) || registro.arquivoEditavel || (registro.arquivoImpressao && acao !=='ADDPRANCHA')"/>
                     </div>
                     <!-- Fim Arquivo Editavel -->
                     
@@ -336,7 +337,7 @@
                     <!-- Arquivo Impressão -->
                     <div class="form-group">      
                         <label class="control-label">Arquivo impressão </label>
-                        <small class="help-block" ng-show="registro.codigo && params.arquivoImpressao"> 
+                        <small class="help-block" ng-show="params.arquivoImpressao"> 
                             Link do atual documento:<br/>
                             <a href="{{params.arquivoImpressao}}" target="_blank">{{registro.nomeArquivo}}</a>
                             <button style="margin: -6px 0px 0px 2px;" type="button" ng-click="removeFile('arquivoImpressao')" class="btn btn-danger btn-xs glyphicon glyphicon-minus"></button>
@@ -346,14 +347,14 @@
                                class="form-control" 
                                fileread="registro.arquivoImpressao"
                                ng-model="registro.arquivoImpressao"
-                               ng-required="registro.arquivoEditavel || registro.arquivoImpressao"/>
+                               ng-required="(acao =='ADDPRANCHA') || registro.arquivoEditavel || registro.arquivoImpressao"/>
                     </div>
                     <!-- Fim Arquivo Impressão -->
 
                     <!-- Arquivo PDF -->
                     <div class="form-group">      
                         <label class=" control-label">Arquivo PDF </label>
-                        <small class="help-block" ng-show="registro.codigo && params.arquivoPdf">  
+                        <small class="help-block" ng-show="params.arquivoPdf">  
                             Link do atual documento:<br/>
                             <a href="{{params.arquivoPdf}}" target="_blank">{{registro.nomeArquivo}}</a>
                             <button style="margin: -6px 0px 0px 2px;" type="button" ng-click="removeFile('arquivoPdf')" class="btn btn-danger btn-xs glyphicon glyphicon-minus"></button>
@@ -363,7 +364,7 @@
                                class="form-control"
                                fileread="registro.arquivoPdf"
                                ng-model="registro.arquivoPdf"
-                               ng-required="!params.arquivoPdf && (registro.arquivoEditavel || registro.arquivoPdf || !registro.linkGoogleDrive)"/>
+                               ng-required="!params.arquivoPdf && (registro.arquivoEditavel || !registro.linkGoogleDrive) || registro.arquivoPdf"/>
                     </div>
                     <!-- Fim Arquivo PDF -->
                     
@@ -396,7 +397,7 @@
                     <!-- Comprovante pagamento -->
                     <div class="form-group">      
                         <label class=" control-label">Comprovante pagamento </label>
-                        <small class="help-block" ng-show="registro.codigo && params.comprovantePagamento">
+                        <small class="help-block" ng-show="params.comprovantePagamento">
                             Link do atual documento:<br/>
                             <a href="{{params.comprovantePagamento}}" target="_blank">{{registro.nomeArquivo}}</a>
                             <button style="margin: -6px 0px 0px 2px;" type="button" ng-click="removeFile('comprovantePagamento')" class="btn btn-danger btn-xs glyphicon glyphicon-minus"></button>
@@ -445,8 +446,8 @@
                             <button type="submit" class="btn btn-primary" ng-disabled="!params.acesso">
                                 Salvar
                             </button>
-<!--                            <button type="submit" class="btn btn-primary" ng-disabled="formListaMestra.$invalid">
-                                Salvar
+<!--                            <button type="button" class="btn btn-primary" ng-click="teste()">
+                                Teste
                             </button>-->
                     </div>
                     <!-- Fim Botão Salvar -->

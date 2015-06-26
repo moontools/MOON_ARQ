@@ -68,6 +68,3 @@ app.constant('config',{
 
 
 
-
-
-

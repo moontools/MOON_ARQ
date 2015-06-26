@@ -112,9 +112,9 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         log("Carregando parâmetros do formulário...");
         googleSheet.setSheetName(config.sheetParamsForm);
 
-        // Carrega o select Projeto
-        googleSheet.getColumnData(["projeto"],"array",function(data, status, message){
-            $scope.params.projeto = status ? data : showError(message);
+        // Carrega o select Categoria
+        googleSheet.getColumnData(["categoria"],"array",function(data, status, message){
+            $scope.params.categoria = status ? data : showError(message);
         });
 
         // Carrega o select Responsável Técnico
@@ -125,7 +125,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                     if(object.responsavelTecnicoEmpreendimento === $scope.registro.empreendimento)
                         $scope.params.responsavelTecnico.push(object.responsavelTecnico); 
                 });
-                log("-> Parâmtros carregados com sucesso!");
+                log("-> Parâmetros carregados com sucesso!");
                 // Verifica se o formulário foi carregado para edição de um registro
                 if($scope.acao === "UPDATE" || $scope.acao === "ADDPRANCHA"){
                     carregaDadosRegistro();
@@ -140,27 +140,27 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         });
         
         /*
-         * Adiciona elementos ao select descricaoArquivo 
-         * @param {string} descricaoArquivo descricaoArquivo a ser selecionado automaticamente (Opcional)
+         * Adiciona elementos ao select descricao 
+         * @param {string} descricao descricao a ser selecionado automaticamente (Opcional)
          * @returns {undefined}
          */
-        $scope.showDescricaoArquivos = function(descricaoArquivo){
+        $scope.showDescricao = function(descricao){
            googleSheet.setSpreadSheetId(config.idSheetConfig);
            googleSheet.setSheetName(config.sheetParamsForm);
-           $scope.params.descricaoArquivo = null;
-           $scope.registro.descricaoArquivo = "";
-           googleSheet.getColumnData(['complementoDescricaoArquivo','descricaoArquivo'],'associativeArray',function(data, status, message){
+           $scope.params.descricao = null;
+           $scope.registro.descricao = "";
+           googleSheet.getColumnData(['arquivoDescricao','descricao'],'associativeArray',function(data, status, message){
                if(status){
-                   $scope.params.descricaoArquivo = [];
+                   $scope.params.descricao = [];
                    angular.forEach(data,function(object){
-                      if(object.complementoDescricaoArquivo === $scope.registro.complemento)
-                      $scope.params.descricaoArquivo.push(object.descricaoArquivo); 
+                      if(object.arquivoDescricao === $scope.registro.arquivo)
+                      $scope.params.descricao.push(object.descricao); 
                    });
-                   if(descricaoArquivo && $scope.params.descricaoArquivo.indexOf(descricaoArquivo) < 0){
-                       $scope.registro.descricaoArquivo = 'OUTRO';
-                       $scope.registro.outraDescricaoArquivo = descricaoArquivo;
-                   }else if(descricaoArquivo){
-                       $scope.registro.descricaoArquivo = descricaoArquivo;
+                   if(descricao && $scope.params.descricao.indexOf(descricao) < 0){
+                       $scope.registro.descricao = 'OUTRO';
+                       $scope.registro.outraDescricaoArquivo = descricao;
+                   }else if(descricao){
+                       $scope.registro.descricao = descricao;
                    }
                }else{
                    showError(message);
@@ -191,25 +191,25 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
             });
         
         /*
-        * Adiciona elementos ao input complemento
-        * @param {string} complemento complemento a ser selecionado automaticamente (Opcional)
-        * @param {string} descricaoArquivo descricaoArquivo a ser selecionado automaticamente (Opcional)
+        * Adiciona elementos ao input arquivo
+        * @param {string} arquivo arquivo a ser selecionado automaticamente (Opcional)
+        * @param {string} descricao descricao a ser selecionado automaticamente (Opcional)
         */
-       $scope.showComplementos = function(complemento,descricaoArquivo){
+       $scope.showArquivos = function(arquivo,descricao){
            googleSheet.setSpreadSheetId(config.idSheetConfig);
            googleSheet.setSheetName(config.sheetParamsForm);
-           $scope.params.complemento = null;
-           $scope.registro.complemento = "";
-           googleSheet.getColumnData(['projetoComplemento','complemento'],'associativeArray',function(data, status, message){
+           $scope.params.arquivo = null;
+           $scope.registro.arquivo = "";
+           googleSheet.getColumnData(['categoriaArquivo','arquivo'],'associativeArray',function(data, status, message){
                if(status){
-                   $scope.params.complemento = [];
+                   $scope.params.arquivo = [];
                    angular.forEach(data,function(object){
-                      if(object.projetoComplemento === $scope.registro.projeto)
-                      $scope.params.complemento.push(object.complemento); 
+                      if(object.categoriaArquivo === $scope.registro.categoria)
+                      $scope.params.arquivo.push(object.arquivo); 
                    });
-                   $scope.registro.complemento = complemento ? complemento : "";
-                   if(descricaoArquivo)
-                        $scope.showDescricaoArquivos(descricaoArquivo); 
+                   $scope.registro.arquivo = arquivo ? arquivo : "";
+                   if(descricao)
+                        $scope.showDescricao(descricao); 
                }else{
                    showError(message);
                }
@@ -225,7 +225,6 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
      * Executa alterações no formulário necessárias para uma atualização
      */
     preparaFormUpdate = function(){
-
         // Manipula as informações sobre os arquivos
         $scope.params.arquivoEditavel = $scope.registro.arquivoEditavel;
         $scope.params.arquivoImpressao = $scope.registro.arquivoImpressao;
@@ -241,14 +240,18 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
      * xecuta alterações no formulário necessárias para adição de uma prancha
      */
     preparaFormAddPrancha = function(){
-        $scope.registro.numeroPrancha = parseInt(util.QueryString.numeroPrancha)+1;
+        log($scope.registro);
+        $scope.registro.numeroPrancha = "";
         $scope.registro.codigo = "";
         $scope.registro.dataDocumento = "";
-        $scope.registro.blocos = [];
+        $scope.registro.descricao = "";
+        $scope.registro.valorPagamento = "";
+        $scope.params.arquivoEditavel = $scope.registro.arquivoEditavel;
         $scope.registro.arquivoEditavel = null;
         $scope.registro.arquivoImpressao = null;
         $scope.registro.arquivoPdf = null;
         $scope.registro.comprovantePagamento = null;
+        log($scope.registro);
     };
 
     /*
@@ -260,7 +263,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         googleSheet.setSheetName($scope.params.nomePagina);
             $timeout(function(){
                 // Verifica se todos os parâmetros básicos foram carregados
-                if($scope.params.cliente && $scope.params.projeto && $scope.params.responsavelTecnico && $scope.params.blocos){
+                if($scope.params.cliente && $scope.params.categoria && $scope.params.responsavelTecnico && $scope.params.blocos){
                     googleSheet.getRecord("Código",$scope.registro.codigo,function(data,status,message){
                         if(!status)
                             return showError(message);
@@ -291,25 +294,26 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                         // Limpa campo observações
                         $scope.registro.observacoes = "";
                         
-                        if($scope.acao === "UPDATE"){
-                            preparaFormUpdate();
-                        }else{
-                            preparaFormAddPrancha();
-                        }
-                        // Verifica se não precisa carregar os inputs  complemento e descricaoArquivo
-                        if(!$scope.registro.complemento && !$scope.registro.descricaoArquivo){
+                        // Verifica se não precisa carregar os inputs  arquivo e descricao
+                        if(!$scope.registro.arquivo && !$scope.registro.descricao){
                             $scope.spinerloading = false;
                         }else{
-                            // Popula os selects complemento e descricaoArquivo se ouver
-                            var _auxComplemento = $scope.registro.complemento;
-                            var _auxDetalhamento = $scope.registro.descricaoArquivo;
-                            $scope.showComplementos($scope.registro.complemento,$scope.registro.descricaoArquivo);
+                            // Popula os selects arquivo e descricao se ouver
+                            var _auxArquivo = $scope.registro.arquivo;
+                            var _auxDetalhamento = $scope.registro.descricao;
+                            $scope.showArquivos($scope.registro.arquivo,$scope.registro.descricao);
                             
-                            // Looping que verifica se os campos complemento e descricaoArquivo foram carregados com sucesso
+                            // Looping que verifica se os campos arquivo e descricao foram carregados com sucesso
                             (function verificaCarregamentoDados(){
                                 $timeout(function(){
-                                    if($scope.registro.complemento && ((_auxDetalhamento && $scope.registro.descricaoArquivo) || (!_auxDetalhamento))){
+                                    if($scope.registro.arquivo && ((_auxDetalhamento && $scope.registro.descricao) || (!_auxDetalhamento))){
                                         $scope.spinerloading = false;
+                                        if($scope.acao === "UPDATE"){
+                                            preparaFormUpdate();
+                                        }else{
+                                            preparaFormAddPrancha();
+                                        }
+                                        
                                     }else{
                                         verificaCarregamentoDados();
                                     }
@@ -361,7 +365,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         $event.stopPropagation();
         $scope.opened = true;
     };    
-    
+       
     /*
      * Força atualização da mensagem de loading
      * @param {string} message Mesagem a ser exibida
@@ -400,7 +404,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         $scope.registro.empreendimento = auxEmp;
         $scope.registro.usuario = auxUsr;
         $scope.registro.cliente = $scope.params.cliente;
-        $scope.params.complemento = null;
+        $scope.params.arquivo = null;
         $scope.formListaMestra.$setPristine();   
     };
     
@@ -435,6 +439,9 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
     * @param {string} message Mensagem de retorno
     */
     notificacao = function(data, status, message){
+        if(!status)
+            return showError(message);
+        $scope.registro.codigo = data.codigo;
         if($scope.registro.notificarCliente === "SIM"){
             log("Notificando cliente...");
             $scope.messageLoading = "Notificando cliente...";
@@ -486,6 +493,8 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
     * @param {string} message Mensagem de retorno 
     */
     verificaGrupoPranchas = function(data, status, message){
+        if(!status)
+            return showError(message);
         log("-> Dados gravados com sucesso!");
         var linhaRegAtual = data.linha;
         $scope.registro.codigo = data.codigo;
@@ -505,7 +514,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                         arrFilesBackup.push(reg.arquivoEditavel);
                     }
                 });
-
+                log(regParaAtualizar);
                 if(regParaAtualizar.length > 0){
                     log("Efetuando backup dos arquivos...");
                     $scope.messageLoading = "Efetuando backup dos arquivos antigos...";
@@ -541,7 +550,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 // Inicia a revisão do arquivo em 1;
                 $scope.registro.revisao = 1;
                 // Insere um novo registro na planilha
-                googleSheet.insertRecord($scope.registro,verificaGrupoPranchas);
+                googleSheet.insertRecord($scope.registro,notificacao);
                 break;
             case "UPDATE" :
                 $scope.messageLoading = "Atualizando dados na planilha..";
@@ -549,12 +558,15 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 delete $scope.registro.linha;
                 delete $scope.registro.adicionar;
                 delete $scope.registro.adicionarPrancha;
-                delete $scope.registro[" feito"];  
+                delete $scope.registro[" feito"]; 
+                var historicoRevisoes = null;
                 // Incrementa a revisão do arquivo;
-                if($scope.inseriuNovoArquivo)
+                if($scope.inseriuNovoArquivo){
                     $scope.registro.revisao++;
+                    historicoRevisoes = 'Histórico Revisões'
+                }
                 // Atualiza um registro na planilha
-                googleSheet.updateRecord($scope.registro,"Código",$scope.registro.codigo,'Histórico Revisões',verificaGrupoPranchas);
+                googleSheet.updateRecord($scope.registro,"Código",$scope.registro.codigo,historicoRevisoes,verificaGrupoPranchas);
                 break;
             case "ADDPRANCHA" :
                 $scope.messageLoading = "Gravando dados na planilha...";
@@ -563,18 +575,9 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 delete $scope.registro.adicionar;               
                 delete $scope.registro.adicionarPrancha;               
                 delete $scope.registro[" feito"];
-                // Incremente a revisão do arquivo;
-                $scope.registro.revisao++;
                 // Insere um novo registro na planilha
-                googleSheet.insertRecord($scope.registro,verificaGrupoPranchas);
+                googleSheet.insertRecord($scope.registro,notificacao);
                 break;
-        }
-
-        // Verifica se o formulário não foi carregado para edição de um registro
-        if($scope.acao === "NEW" || $scope.acao === "ADDPRANCHA"){
-            
-        }else{                               
-              
         }
     };
     
@@ -667,6 +670,27 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         $scope.messageLoading = "Processando...";
         $scope.spinerloading = true;
         
+        // Busca pelas configurações dos níveis de gestão
+        $scope.registro.codigoDoEntregavel = $scope.registro.categoria;
+        $scope.registro.codigoDoEntregavel += ($scope.registro.arquivo ? " "+$scope.registro.arquivo : "");
+        $scope.registro.codigoDoEntregavel += ($scope.registro.descricao && $scope.params.descricao.indexOf("OUTRO") < 0 ? " "+$scope.registro.descricao : "");
+        $scope.registro.localizacaoNoSistema = "";
+        for(var i = 0; i < $scope.params.configArquivos.length; i++){
+            if($scope.params.configArquivos[i].entregaveis === $scope.registro.codigoDoEntregavel){
+                $scope.registro.localizacaoNoSistema = $scope.params.configArquivos[i].localizacaoNoSistema.replace(/{%EMP%}/g, $scope.registro.empreendimento);
+                $scope.registro.codigoEtapa = $scope.params.configArquivos[i].codigoEtapa;
+                $scope.registro.etapaFinalCronograma = $scope.params.configArquivos[i].etapaFinalCronograma;
+                $scope.params.dataNomeArquivo = $scope.params.configArquivos[i].dataNomeArquivo;
+                break;
+            }
+        }
+        // Verifica se existe uma localização válida para salvar os arquivos
+        if(!$scope.registro.localizacaoNoSistema)
+            return showError("Não foi possível identificar a localização do arquivo,\n\
+                              o sistema não pode continuar! Por favor entre em contato com \n\
+                              o responsável por manter essa configuração.");
+        
+        
         // Formata a data
         $scope.registro.dataDocumento = $filter('date')($scope.registro.dataDocumento,'yyyy-MM-dd');
         
@@ -689,42 +713,22 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         }
         
         // Faz o tratamento da informação Detalhamento
-        if($scope.registro.descricaoArquivo === 'OUTRO'){
-            var auxDescArq = $scope.registro.descricaoArquivo;
-            $scope.registro.descricaoArquivo = $scope.registro.outraDescricaoArquivo;
+        if($scope.registro.descricao === 'OUTRO'){
+            var auxDescArq = $scope.registro.descricao;
+            $scope.registro.descricao = $scope.registro.outraDescricaoArquivo;
         }
         delete $scope.registro.outraDescricaoArquivo;
         
-        // Busca pelas configurações dos níveis de gestão
-        $scope.registro.codigoDoEntregavel = $scope.registro.projeto;
-        $scope.registro.codigoDoEntregavel += ($scope.registro.complemento ? " "+$scope.registro.complemento : "");
-        $scope.registro.codigoDoEntregavel += ($scope.registro.descricaoArquivo && $scope.params.descricaoArquivo.indexOf("OUTRO") < 0 ? " "+$scope.registro.descricaoArquivo : "");
-        $scope.registro.localizacaoNoSistema = "";
-        for(var i = 0; i < $scope.params.configArquivos.length; i++){
-            if($scope.params.configArquivos[i].entregaveis === $scope.registro.codigoDoEntregavel){
-                $scope.registro.localizacaoNoSistema = $scope.params.configArquivos[i].localizacaoNoSistema.replace(/{%EMP%}/g, $scope.registro.empreendimento);
-                $scope.registro.codigoEtapa = $scope.params.configArquivos[i].codigoEtapa;
-                $scope.registro.etapaFinalCronograma = $scope.params.configArquivos[i].etapaFinalCronograma;
-                $scope.params.dataNomeArquivo = $scope.params.configArquivos[i].dataNomeArquivo;
-                break;
-            }
-        }
-        
-        // Verifica se existe uma localização válida para salvar os arquivos
-        if(!$scope.registro.localizacaoNoSistema)
-            return showError("Não foi possível identificar a localização do arquivo,\n\
-                              o sistema não pode continuar! Por favor entre em contato com \n\
-                              o responsável por manter essa configuração.");
         // Monta o nome do arquivo
         $scope.registro.nomeArquivo = $scope.registro.cliente;
         $scope.registro.nomeArquivo += " "+$scope.registro.empreendimento;
-        $scope.registro.nomeArquivo += " "+$scope.registro.projeto;
-        $scope.registro.nomeArquivo += $scope.registro.complemento? " "+$scope.registro.complemento : "";
+        $scope.registro.nomeArquivo += " "+$scope.registro.categoria;
+        $scope.registro.nomeArquivo += $scope.registro.arquivo? " "+$scope.registro.arquivo : "";
         $scope.registro.nomeArquivo += $scope.registro.nGrupoPranchas? " "+$scope.registro.nGrupoPranchas : "";
         $scope.registro.nomeArquivo += $scope.registro.blocos? " BLOCOS "+$scope.registro.blocos : "";
         $scope.registro.nomeArquivo += $scope.registro.numeroPrancha? " "+$scope.registro.numeroPrancha : "";
-        $scope.registro.nomeArquivo += " "+$scope.registro.descricaoArquivo;
-        $scope.registro.nomeArquivo += $scope.params.dataNomeArquivo === "SIM" ? " "+$filter('date')($scope.registro.dataDocumento,'dd/MM/yyyy') : "";
+        $scope.registro.nomeArquivo += " "+$scope.registro.descricao;
+        $scope.registro.nomeArquivo += $scope.params.dataNomeArquivo === "SIM" ? " "+$scope.registro.dataDocumento: "";
         
         // A partir daqui faz manipulação dos arquivos para enviar para o Google Drive e backup dos arquivos antigos
         // se houver.
@@ -737,6 +741,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
             {id : "arquivoImpressao",description:"Arquivo Impressão", file: null},
             {id : "arquivoPdf",description:"Arquivo Pdf", file: null},
             {id : "comprovantePagamento",description:"Comprovante Pagamento", file:null}];
+        log(arrayArquivos);
         
         angular.forEach(arrayArquivos,function(arquivo){
             // Se não foi carregado um novo arquivo mantém o arquivo antigo
@@ -795,7 +800,6 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
     // Pega os parâmetros da URL
     $scope.acao = util.QueryString.acao.toUpperCase();
     $scope.registro.empreendimento = util.QueryString.empreendimento;
-    
     // Verificao qual a ação do formulário
     switch ($scope.acao) {
         case "NEW":
@@ -819,6 +823,26 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
             //$scope.registro.numeroPrancha = util.QueryString.numeroPrancha + 1;
             carregaParametrosIniciais();
             break;
+        default:
+            return showError("Parâmetro 'acao' inválido!");
+            break;
+        
     }
 
+//    $scope.teste = function(){
+//        bla = function(tentativas){
+//            if(!tentativas){
+//                tentativas = 1;
+//            }else{
+//                tentativas++;
+//            }
+//            log("Tentativa "+tentativas);
+//            
+//            if(tentativas <= 20)
+//                $timeout(bla(tentativas),1000);
+//        };
+//        
+//        bla();
+//    };
+    
  });
