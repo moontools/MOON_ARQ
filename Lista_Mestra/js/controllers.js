@@ -117,7 +117,8 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         googleSheet.getColumnData(["categoria"],"array",function(data, status, message){
             $scope.params.categoria = status ? data : showError(message);
         });
-
+        
+        googleSheet.setSheetName(config.sheetParamsFiles);
         // Carrega o select Responsável Técnico
         googleSheet.getColumnData(['responsavelTecnico','responsavelTecnicoEmpreendimento'],"associativeArray",function(data, status, message){
             if(status){
@@ -177,7 +178,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
 
         // Exibe os Blocos dos empreendimentos
         $scope.params.bloco = null;
-        googleSheet.setSheetName(config.sheetParamsForm);
+        googleSheet.setSheetName(config.sheetParamsFiles);
         if($scope.registro.empreendimento)
             googleSheet.getColumnData(['blocos','blocosEmpreendimento'],'associativeArray',function(data, status, message){
                 if(status){

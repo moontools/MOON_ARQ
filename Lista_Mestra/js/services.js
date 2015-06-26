@@ -229,6 +229,7 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
         }   
     };
     
+    
     /*
      * Inicia o backup dos arquivos
      * @param {array} arrayFilesLink Array com os ids dos arquivos a serem movidos

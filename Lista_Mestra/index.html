@@ -130,7 +130,7 @@
                         <label class=" control-label">Categoria </label>
                         <small class="help-block" ng-show="formListaMestra.categoria.$invalid && !formListaMestra.categoria.$pristine">Selecione uma categoria</small>
                         <select name="categoria"
-                                ng-options="categoria[0] as categoria[0] for categoria in params.categoria"
+                                ng-options="categoria as categoria for categoria in params.categoria"
                                 class="form-control"
                                 ng-class="{'spinner' : !params.categoria || (formListaMestra.categoria.$valid && !formListaMestra.categoria.$pristine && !params.arquivo)}"
                                 ng-model="registro.categoria"

@@ -110,6 +110,15 @@
               return query_string;
         } ();
         
+        this.removeDuplicates = function(array){
+            var arrayReturn = [];
+            for(var i in array){
+                if(arrayReturn.indexOf(array[i]) === -1)
+                   arrayReturn.push(array[i]);
+            };
+            return arrayReturn;
+        };
+        
   
     })
     /*
