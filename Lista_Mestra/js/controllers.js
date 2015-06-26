@@ -23,6 +23,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
      * @returns {Boolean}
      */
     showError = function(message){
+        log(message);
         $scope.spinerloading = false;
         if(!$scope.showErrorOpen){
             var dlg = dialogs.error('Erro','Ocorreu um erro inesperado! Tente novamente mais tarde, se o problema persistir informe o erro para Moon Tools.<br/><br/>Erro: '+message);
@@ -690,7 +691,6 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                               o sistema não pode continuar! Por favor entre em contato com \n\
                               o responsável por manter essa configuração.");
         
-        
         // Formata a data
         $scope.registro.dataDocumento = $filter('date')($scope.registro.dataDocumento,'yyyy-MM-dd');
         
@@ -827,22 +827,12 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
             return showError("Parâmetro 'acao' inválido!");
             break;
         
-    }
-
+    }    
+//    
 //    $scope.teste = function(){
-//        bla = function(tentativas){
-//            if(!tentativas){
-//                tentativas = 1;
-//            }else{
-//                tentativas++;
-//            }
-//            log("Tentativa "+tentativas);
-//            
-//            if(tentativas <= 20)
-//                $timeout(bla(tentativas),1000);
-//        };
 //        
-//        bla();
+//        var stack = new Error();
+//        log(stack);
 //    };
     
  });

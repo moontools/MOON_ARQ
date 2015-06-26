@@ -58,7 +58,7 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
      * Descobre quantos quantos filhos existem um uma pasta pai
      * @param {string} idFolder id da pasta pai
      * @param {array} patchFolder array com as pastas a serem encontradas
-     * @param {function} função a ser executada assim que a pasta desejada for encontrada ou criada
+     * @param {function} execFuncion função a ser executada assim que a pasta desejada for encontrada ou criada
      */
     var descobreFilhos = function(idFolder,patchFolder,execFuncion){
         if(patchFolder.length > 0){
@@ -186,15 +186,16 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
     var _moveFiles = function(arrayFilesLink,FolderDestinoId,callback){
         if(arrayFilesLink.length > 0){
             var idFile = arrayFilesLink[0].split("file/d/")[1];
-                idFile = idFile.split("/edit")[0];
+                idFile = idFile.split("/")[0];
             log("Obtendo informação do arquivo "+arrayFilesLink[0]+"...");
             mtlGdrive.getInfoFile(idFile,function(result){
+                log(result);
                 var id = result.id,
                     fileInf = result;
                 log("Adicionando o arquivo cujo id é "+id+" na pasta cujo id é "+FolderDestinoId+"...");
                 mtlGdrive.addFileIntoFolder(FolderDestinoId, id,function(result){
                     if(result.error){
-                        callback(false,result,result.error);
+                        callback(false,result,result.error.message);
                     }else{
                         log("-> Arquivo adicionado!");
                         var folderOrigem = null;
@@ -207,7 +208,7 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
                             mtlGdrive.removeFileFromFolder(folderOrigem,id,function(result){
                                 if(result){
                                     if(result.error){
-                                        callback(false,result,result.error);
+                                        callback(false,result,result.error.message);
                                     }
                                 }else{
                                     log("-> Arquivo removido!");
@@ -257,7 +258,7 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
     var renameFiles = function(arrayFilesId,title,callback){
         if(arrayFilesId.length > 0){
             var idFile = arrayFilesId[0].split("file/d/")[1];
-                idFile = idFile.split("/edit")[0];
+                idFile = idFile.split("/")[0];
             mtlGdrive.getInfoFile(idFile,function(result){
                 var metaData = {
                     'title' : title+"."+result.fileExtension,
