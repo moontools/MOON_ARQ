@@ -57,9 +57,9 @@ app.constant('config',{
     //Nome da página onde estão localizadas as informações referente aos empreendimentos
     sheetConfigEmp : 'Configurações Empreendimentos',
     // Nome da página onde se encontram os parâmetros utilizados no formulário
-    sheetParamsForm : 'Página7',
+    sheetParamsForm : 'Parâmetros Formulário',
     // Nome da página onde se encontram os parâmetos utilizados para manipulação dos arquivos
-    sheetParamsFiles : 'Cópia de Níveis Gestão',
+    sheetParamsFiles : 'Níveis Gestão',
     // ID da API Google Drive
     googleDriveClienteId : '597261259365-0n3ee1mmra5lveal5a014233f4murqef.apps.googleusercontent.com',
     // Scorpo da API Google Drive

@@ -245,7 +245,6 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         log($scope.registro);
         $scope.registro.numeroPrancha = "";
         $scope.registro.codigo = "";
-        $scope.registro.dataDocumento = "";
         $scope.registro.descricao = "";
         $scope.registro.valorPagamento = "";
         $scope.params.arquivoEditavel = $scope.registro.arquivoEditavel;
