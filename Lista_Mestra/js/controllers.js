@@ -355,6 +355,16 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 
         });  
     };
+    
+    $scope.cancelarRegistro = function(){
+        var dlg = dialogs.confirm("Atenção!","Deseja realmente cancelar o registro?");
+        dlg.result.then(function(btn){
+             $scope.registro.revisao = "CANCELADO";
+             $scope.confirmSalvar();
+        },function(btn){
+                
+        });  
+    };
         
     /*
      * Função para ativar o popup do calendário
@@ -517,8 +527,8 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 });
                 log(regParaAtualizar);
                 if(regParaAtualizar.length > 0){
-                    log("Efetuando backup dos arquivos...");
-                    $scope.messageLoading = "Efetuando backup dos arquivos antigos...";
+                    log("Efetuando backup dos...");
+                    $scope.messageLoading = "Efetuando backup dos arquivos...";
                     lmFiles.makeBackupFiles(arrFilesBackup,$scope.params.idPastaBackup,function(status,data,message2){
                         if(!status)
                             return showError(message2);
@@ -564,7 +574,9 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 // Incrementa a revisão do arquivo;
                 if($scope.inseriuNovoArquivo){
                     $scope.registro.revisao++;
-                    historicoRevisoes = 'Histórico Revisões'
+                    historicoRevisoes = 'Histórico Revisões';
+                }else if($scope.registro.revisao === "CANCELADO"){
+                    historicoRevisoes = 'Histórico Revisões';
                 }
                 // Atualiza um registro na planilha
                 googleSheet.updateRecord($scope.registro,"Código",$scope.registro.codigo,historicoRevisoes,verificaGrupoPranchas);
@@ -744,8 +756,11 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         log(arrayArquivos);
         
         angular.forEach(arrayArquivos,function(arquivo){
+            if($scope.registro.revisao === "CANCELADO" && $scope.params[arquivo.id]){
+                $scope.arrayFilesBackup.push($scope.params[arquivo.id]);
+                $scope.registro[arquivo.id] = $scope.params[arquivo.id];
             // Se não foi carregado um novo arquivo mantém o arquivo antigo
-            if(!$scope.registro[arquivo.id]){
+            }else if(!$scope.registro[arquivo.id]){
                 $scope.registro[arquivo.id] = $scope.params[arquivo.id];
             // Se foi carregado um novo arquivo adiciona o antigo ao array de backup
             }else if($scope.params[arquivo.id]){
@@ -761,8 +776,8 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         }else{
             // Verifica se precisa fazer backup de arquivos antigos
             if($scope.arrayFilesBackup.length > 0){
-                log("Efetuando backup dos arquivos...");
-                $scope.messageLoading = "Efetuando backup dos arquivos antigos...";
+                log("Efetuando backup dos...");
+                $scope.messageLoading = "Efetuando backup dos arquivos...";
                 lmFiles.makeBackupFiles($scope.arrayFilesBackup,$scope.params.idPastaBackup,function(status,data,message){
                     if(!status)
                         return showError(message);
@@ -820,19 +835,11 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 return showError("Parâmetro 'nGrupoPranchas' não identificado!");
             $scope.registro.codigo = util.QueryString.codigo;
             $scope.registro.nGrupoPranchas = util.QueryString.nGrupoPranchas;
-            //$scope.registro.numeroPrancha = util.QueryString.numeroPrancha + 1;
             carregaParametrosIniciais();
             break;
         default:
             return showError("Parâmetro 'acao' inválido!");
             break;
         
-    }    
-//    
-//    $scope.teste = function(){
-//        
-//        var stack = new Error();
-//        log(stack);
-//    };
-    
+    }        
  });
