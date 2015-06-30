@@ -753,7 +753,6 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
             {id : "arquivoImpressao",description:"Arquivo Impressão", file: null},
             {id : "arquivoPdf",description:"Arquivo Pdf", file: null},
             {id : "comprovantePagamento",description:"Comprovante Pagamento", file:null}];
-        log(arrayArquivos);
         
         angular.forEach(arrayArquivos,function(arquivo){
             if($scope.registro.revisao === "CANCELADO" && $scope.params[arquivo.id]){
