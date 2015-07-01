@@ -30,12 +30,12 @@ select:required:valid {
 }
 
 input.spinner{
-    background: #fff url(../images/gif_moontools_reducido.gif)no-repeat center right 8px !important;
+    background: #fff url(images/gif_moontools.gif)no-repeat center right 8px !important;
     background-size: 20px !important;  
 }
 
 select.spinner{
-   background: #fff url(../images/gif_moontools_reducido.gif) no-repeat center right 22px !important;
+   background: #fff url(images/gif_moontools.gif) no-repeat center right 22px !important;
    background-size: 20px !important;
 }
 
