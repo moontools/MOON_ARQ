@@ -357,7 +357,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
     };
     
     $scope.cancelarRegistro = function(){
-        var dlg = dialogs.confirm("Atenção!","Deseja realmente cancelar o registro?");
+        var dlg = dialogs.confirm("Atenção!","Deseja realmente excluir o registro?");
         dlg.result.then(function(btn){
              $scope.registro.revisao = "CANCELADO";
              $scope.confirmSalvar();
@@ -553,7 +553,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         log("Gravando dados na planilha...");
         // Seta o ID da planilha e nome da página a serem gravados os dados
         googleSheet.setSpreadSheetId($scope.params.idPlanilha);
-        googleSheet.setSheetName(config.nameSheetListaMestra);
+        googleSheet.setSheetName($scope.params.nomePagina);
 
         switch ($scope.acao) {
             case "NEW" :
