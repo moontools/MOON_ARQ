@@ -220,12 +220,12 @@
                     <div class="form-group" ng-class="{ 'has-error' : formListaMestra.numeroPrancha.$invalid && !formListaMestra.numeroPrancha.$pristine}"> 
                         <label class=" control-label">Número prancha </label>
                         <small class="help-block" ng-show="formListaMestra.numeroPrancha.$invalid && !formListaMestra.numeroPrancha.$pristine">Informe somente números</small>
-                        <input type="number"
+                        <input type="text"
                                name="numeroPrancha"
                                placeholder="Insira o número da prancha"
                                class="form-control" 
                                ng-model="registro.numeroPrancha"
-                               ng-required="registro.nGrupoPranchas">
+                               ng-required="registro.nGrupoPranchas || registro.numeroPrancha">
                     </div> 
                     <!-- Fim Número Prancha -->
                                                           
