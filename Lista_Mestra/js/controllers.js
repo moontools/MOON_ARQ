@@ -151,11 +151,11 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
            googleSheet.setSheetName(config.sheetParamsForm);
            $scope.params.descricao = null;
            $scope.registro.descricao = "";
-           googleSheet.getColumnData(['arquivoDescricao','descricao'],'associativeArray',function(data, status, message){
+           googleSheet.getColumnData(['categoriaArquivoDescricao','arquivoDescricao','descricao'],'associativeArray',function(data, status, message){
                if(status){
                    $scope.params.descricao = [];
                    angular.forEach(data,function(object){
-                      if(object.arquivoDescricao === $scope.registro.arquivo)
+                      if(object.categoriaArquivoDescricao === $scope.registro.categoria && object.arquivoDescricao === $scope.registro.arquivo)
                       $scope.params.descricao.push(object.descricao); 
                    });
                    if(descricao && $scope.params.descricao.indexOf(descricao) < 0){
@@ -357,10 +357,20 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
     };
     
     $scope.cancelarRegistro = function(){
+                
         var dlg = dialogs.confirm("Atenção!","Deseja realmente excluir o registro?");
         dlg.result.then(function(btn){
-             $scope.registro.revisao = "CANCELADO";
-             $scope.confirmSalvar();
+            
+            if(!$scope.registro.observacoes){
+                dialogs.error("Atenção!","Descreva no campo observações o motivo do cancelamento do registro?")
+                .result.then(function(btn){
+
+                });
+                return;
+            }else{
+                $scope.registro.cancelado = true;
+                $scope.confirmSalvar();
+            }
         },function(btn){
                 
         });  
@@ -575,7 +585,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 if($scope.inseriuNovoArquivo){
                     $scope.registro.revisao++;
                     historicoRevisoes = 'Histórico Revisões';
-                }else if($scope.registro.revisao === "CANCELADO"){
+                }else if($scope.registro.cancelado){
                     historicoRevisoes = 'Histórico Revisões';
                 }
                 // Atualiza um registro na planilha
@@ -755,7 +765,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
             {id : "comprovantePagamento",description:"Comprovante Pagamento", file:null}];
         
         angular.forEach(arrayArquivos,function(arquivo){
-            if($scope.registro.revisao === "CANCELADO" && $scope.params[arquivo.id]){
+            if($scope.registro.cancelado && $scope.params[arquivo.id]){
                 $scope.arrayFilesBackup.push($scope.params[arquivo.id]);
                 $scope.registro[arquivo.id] = $scope.params[arquivo.id];
             // Se não foi carregado um novo arquivo mantém o arquivo antigo
