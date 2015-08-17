@@ -203,7 +203,7 @@ app.service('lmFiles',function(mtlGdrive,$timeout){
                            if(parent.id !== FolderDestinoId)
                                folderOrigem = parent.id;
                         });
-                        if(folderOrigem){
+                        if(folderOrigem && (folderOrigem != FolderDestinoId)){
                             log("Removendo o arquivo cujo id é "+id+" da pasta cujo id e é "+fileInf.parents[0].id);
                             mtlGdrive.removeFileFromFolder(folderOrigem,id,function(result){
                                 if(result){

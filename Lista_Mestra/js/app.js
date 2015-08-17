@@ -54,6 +54,8 @@ app.constant('config',{
     idSheetConfig : '1dfZqj7IIEmYFMioF2_xm_dvhjKAsScHE3PeQgos6Uj8',
     // Nome da página onde será inseridos os dados do formulário
     nameSheetListaMestra : 'Índice Projetos',
+    // Nome página revisões
+    nameSheetRevisoes : 'Histórico de Revisões',
     //Nome da página onde estão localizadas as informações referente aos empreendimentos
     sheetConfigEmp : 'Configurações Empreendimentos',
     // Nome da página onde se encontram os parâmetros utilizados no formulário

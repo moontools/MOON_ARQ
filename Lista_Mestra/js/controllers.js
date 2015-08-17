@@ -239,7 +239,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
     };
     
     /*
-     * xecuta alterações no formulário necessárias para adição de uma prancha
+     * Executa alterações no formulário necessárias para adição de uma prancha
      */
     preparaFormAddPrancha = function(){
         log($scope.registro);
@@ -355,7 +355,9 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 
         });  
     };
-    
+    /*
+     * Função executada ao pressionar o botão excluir registro
+     */
     $scope.cancelarRegistro = function(){
                 
         var dlg = dialogs.confirm("Atenção!","Deseja realmente excluir o registro?");
@@ -379,7 +381,6 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
     /*
      * Função para ativar o popup do calendário
      * @param {type} $event
-     * @returns {undefined}
      */
     $scope.openCalendar = function($event) {
         $event.preventDefault();
