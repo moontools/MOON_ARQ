@@ -570,7 +570,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
             case "NEW" :
                 $scope.messageLoading = "Gravando dados na planilha..";
                 // Inicia a revisão do arquivo em 1;
-                $scope.registro.revisao = 1;
+                $scope.registro.revisao = !$scope.registro.revisao ? 1 : $scope.registro.revisao;
                 // Insere um novo registro na planilha
                 googleSheet.insertRecord($scope.registro,notificacao);
                 break;
@@ -697,7 +697,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         // Busca pelas configurações dos níveis de gestão
         $scope.registro.codigoDoEntregavel = $scope.registro.categoria;
         $scope.registro.codigoDoEntregavel += ($scope.registro.arquivo ? " "+$scope.registro.arquivo : "");
-        $scope.registro.codigoDoEntregavel += ($scope.registro.descricao && $scope.params.descricao.indexOf("OUTRO") < 0 ? " "+$scope.registro.descricao : "");
+        $scope.registro.codigoDoEntregavel += ($scope.registro.descricao && $scope.registro.descricao !== "OUTRO" ? " "+$scope.registro.descricao : "");
         $scope.registro.localizacaoNoSistema = "";
         for(var i = 0; i < $scope.params.configArquivos.length; i++){
             if($scope.params.configArquivos[i].entregaveis === $scope.registro.codigoDoEntregavel){

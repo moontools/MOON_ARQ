@@ -95,11 +95,11 @@
                     <div class="form-group">      
                         <label class="control-label">Revisão documento</label>
                         <small class="help-block"></small>
-                        <input type="text"
+                        <input type="number"
                                name="revisao"
                                class="form-control" 
                                ng-model="registro.revisao"
-                               ng-disabled="true">
+                               ng-disabled="acao==='UPDATE' || acao==='ADDPRANCHA'"/>
                     </div> 
                     <!-- Fim código documento -->
                                         
