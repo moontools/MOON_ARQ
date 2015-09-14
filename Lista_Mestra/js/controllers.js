@@ -570,7 +570,7 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
             case "NEW" :
                 $scope.messageLoading = "Gravando dados na planilha..";
                 // Inicia a revisão do arquivo em 1;
-                $scope.registro.revisao = !$scope.registro.revisao ? 1 : $scope.registro.revisao;
+                $scope.registro.revisao = (!$scope.registro.revisao && $scope.registro.revisao !== 0) ? 1 : $scope.registro.revisao;
                 // Insere um novo registro na planilha
                 googleSheet.insertRecord($scope.registro,notificacao);
                 break;
