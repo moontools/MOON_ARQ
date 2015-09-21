@@ -582,10 +582,12 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
                 delete $scope.registro.adicionarPrancha;
                 delete $scope.registro[" feito"]; 
                 var historicoRevisoes = null;
+                log("UPDATEEEEEEE");
                 // Incrementa a revisão do arquivo;
-                if($scope.inseriuNovoArquivo){
+                if(($scope.inseriuNovoArquivo && !$scope.registro.nGrupoPranchas) || $scope.inseriuNovoArquivoEditavel){
                     $scope.registro.revisao++;
                     historicoRevisoes = 'Histórico Revisões';
+                    log("Entrei aquiiiiiiiii");
                 }else if($scope.registro.cancelado){
                     historicoRevisoes = 'Histórico Revisões';
                 }
@@ -614,6 +616,10 @@ app.controller('formListaMestra',function($rootScope,$scope,$filter,$timeout,$ht
         if(arrayArquivos.length > 0){
             if(typeof(arrayArquivos[0].file) === "object" && arrayArquivos[0].file ){
                 $scope.inseriuNovoArquivo = true;
+                
+                if(arrayArquivos[0].id === 'arquivoEditavel')  
+                    $scope.inseriuNovoArquivoEditavel = true;
+                
                 $scope.messageLoading = "Gravando "+arrayArquivos[0].description+"...";
                 // Seta as configurações necessárias para enviar os arquivos para o Drive
                 lmFiles.setFolderRaiz($scope.params.idPastaRaiz);
